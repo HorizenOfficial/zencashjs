@@ -1,0 +1,14 @@
+{
+  "name": "zencashjs",
+  "version": "0.0.1",
+  "description": "Dead easy to use Zencash JavaScript based library",
+  "main": "index.js",
+  "repository": "https://github.com/kendricktan/zencashjs.git",
+  "author": "Kendrick Tan <kendricktan0814@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bs58check": "^2.0.2",
+    "ecurve": "^1.0.5",
+    "sjcl": "^1.0.7"
+  }
+}
