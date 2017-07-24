@@ -2,13 +2,20 @@
   "name": "zencashjs",
   "version": "0.0.1",
   "description": "Dead easy to use Zencash JavaScript based library",
-  "main": "index.js",
+  "main": "./src/index.js",
   "repository": "https://github.com/kendricktan/zencashjs.git",
   "author": "Kendrick Tan <kendricktan0814@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "bs58check": "^2.0.2",
+    "bigi": "^1.4.2",
+    "bs58": "^4.0.1",
+    "coinstring": "^2.3.0",
+    "create-hmac": "^1.1.6",
+    "crypto": "^0.0.3",
     "ecurve": "^1.0.5",
-    "sjcl": "^1.0.7"
+    "ripemd160": "^2.0.1",
+    "safe-buffer": "^5.1.1",
+    "sjcl": "^1.0.7",
+    "typeforce": "^1.11.1"
   }
 }
