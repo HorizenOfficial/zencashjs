@@ -9,6 +9,7 @@
   "dependencies": {
     "bigi": "^1.4.2",
     "bs58": "^4.0.1",
+    "bs58check": "^2.0.2",
     "coinstring": "^2.3.0",
     "create-hmac": "^1.1.6",
     "crypto": "^0.0.3",

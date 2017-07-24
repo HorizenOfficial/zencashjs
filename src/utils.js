@@ -1,4 +1,4 @@
-var bs58 = require('bs58')
+var bs58check = require('bs58check')
 var Zripemd160 = require('ripemd160')
 var sjcl = require('sjcl')
 var zconfig = require('./config')
@@ -30,31 +30,35 @@ function sha256 (buffer) {
  * @return {String} sha256 hash of the sha256 hash of the buffer
  */
 function sha256x2 (buffer) {
-  return sha256(sha256(buffer))
+  var t = sha256(buffer)
+  return sha256(t)
 }
 
 /*
  * Converts a private key to WIF format
  * @param {String} pk (private key)
- * @return {Sting} WIF format
+ * @return {Sting} WIF format (hex compressed)
  */
 function privKeyToWIF (pk) {
-  var pkAndVer = zconfig.wif + pk
-  var checksum = sha256x2(pkAndVer).substr(0, 8)
-  return bs58.encode(Buffer.from(pkAndVer + checksum, 'hex'))
+  // Remove '01' from the end if you don't want the compressed version
+  return bs58check.encode(Buffer.from(zconfig.wif + pk + '01', 'hex'))
 }
 
 /*
  * Returns private key's public Key
  * @param {String} pk (private key)
- * @return {Sting} Public Key
+ * @return {Sting} Public Key (uncompressed)
  */
 function privKeyToPubKey (pk) {
   var ecparams = ecurve.getCurveByName('secp256k1')
   var curvePt = ecparams.G.multiply(bigi.fromBuffer(pk))
   var x = curvePt.affineX
   var y = curvePt.affineY
-  var publicKey = Buffer.concat([Buffer.from([0x04]), x.toBuffer(32), y.toBuffer(32)])
+  var publicKey = Buffer.concat([
+    Buffer.from('04', 'hex'),
+    x.toBuffer(32),
+    y.toBuffer(32)
+  ])
   return publicKey.toString('hex')
 }
 
@@ -65,12 +69,7 @@ function privKeyToPubKey (pk) {
  */
 function pubKeyToAddr (pk) {
   var hash160 = ripemd160(pk)
-  var version = '0' // if using testnet, would use 0x6F or 111.
-  var verAndHash = version + hash160
-  var doublesha = sha256x2(verAndHash)
-  var checksum = doublesha.substr(0, 8)
-  var unencodedaddress = zconfig.pubKeyHash + hash160 + checksum
-  return bs58.encode(Buffer.from(unencodedaddress, 'hex'))
+  return bs58check.encode(Buffer.from(zconfig.pubKeyHash + hash160, 'hex'))
 }
 
 module.exports = {
