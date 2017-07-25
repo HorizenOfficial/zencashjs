@@ -2,7 +2,7 @@
   "name": "zencashjs",
   "version": "0.0.1",
   "description": "Dead easy to use Zencash JavaScript based library",
-  "main": "./src/index.js",
+  "main": "./lib/index.js",
   "repository": "https://github.com/kendricktan/zencashjs.git",
   "author": "Kendrick Tan <kendricktan0814@gmail.com>",
   "license": "MIT",
@@ -10,13 +10,24 @@
     "bigi": "^1.4.2",
     "bs58": "^4.0.1",
     "bs58check": "^2.0.2",
-    "coinstring": "^2.3.0",
+    "create-hash": "^1.1.3",
     "create-hmac": "^1.1.6",
-    "crypto": "^0.0.3",
-    "ecurve": "^1.0.5",
-    "ripemd160": "^2.0.1",
+    "crypto-js": "^3.1.9-1",
+    "ecurve": "^1.0.5",    
     "safe-buffer": "^5.1.1",
     "sjcl": "^1.0.7",
     "typeforce": "^1.11.1"
+  },
+  "scripts": {
+    "build": "babel src/ -d lib/",
+    "prepublic": "yarn run build",
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-flow": "^6.23.0",
+    "chai": "^4.1.0",
+    "flow-bin": "^0.51.0",
+    "mocha": "^3.4.2"
   }
 }

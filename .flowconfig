@@ -1,0 +1,11 @@
+[ignore]
+./lib/.*
+
+[include]
+./src/*.js
+
+[libs]
+
+[options]
+
+[lints]
