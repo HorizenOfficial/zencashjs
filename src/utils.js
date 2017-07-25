@@ -47,9 +47,10 @@ function pubKeyToAddr (pubKey: string) {
   return bs58check.encode(Buffer.from(zconfig.pubKeyHash +  hash160, 'hex')).toString('hex')
 }
 
+
 module.exports = {
   makePrivKey: makePrivKey,  
   privKeyToWIF: privKeyToWIF,
   privKeyToPubKey: privKeyToPubKey,
-  pubKeyToAddr: pubKeyToAddr
+  pubKeyToAddr: pubKeyToAddr  
 }
