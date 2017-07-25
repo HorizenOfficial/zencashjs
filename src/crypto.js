@@ -5,23 +5,23 @@
 
 var createHash = require('create-hash')
 
-function ripemd160 (buffer: Buffer) {
+function ripemd160 (buffer: Buffer): string {
   return createHash('rmd160').update(buffer).digest('hex')
 }
 
-function sha1 (buffer: Buffer) {
+function sha1 (buffer: Buffer): string {
   return createHash('sha1').update(buffer).digest('hex')
 }
 
-function sha256 (buffer: Buffer) {
+function sha256 (buffer: Buffer): string {
   return createHash('sha256').update(buffer).digest('hex')
 }
 
-function sha256x2 (buffer: Buffer) {
+function sha256x2 (buffer: Buffer): string {
   return sha256(Buffer.from(sha256(buffer), 'hex'))
 }
 
-function hash160 (buffer: Buffer) {
+function hash160 (buffer: Buffer): string {
   const sha = sha256(buffer)
   const hash160 = ripemd160(Buffer.from(sha, 'hex'))
   return hash160

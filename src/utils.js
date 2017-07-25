@@ -10,7 +10,7 @@ var bigi = require('bigi')
  * @param {String} privKey (private key)
  * @return {Sting} WIF format (uncompressed) 
  */
-function makePrivKey (phrase: string) {  
+function makePrivKey (phrase: string): string {  
   return zcrypto.sha256(Buffer.from(phrase, 'utf-8'))
 }
 
@@ -19,7 +19,7 @@ function makePrivKey (phrase: string) {
  * @param {String} privKey (private key)
  * @return {Sting} WIF format (uncompressed) 
  */
-function privKeyToWIF (privKey: string) {
+function privKeyToWIF (privKey: string): string {
   // Add '01' from the end if you want the compressed version
   return bs58check.encode(Buffer.from(zconfig.wif + privKey, 'hex'))
 }
@@ -29,7 +29,7 @@ function privKeyToWIF (privKey: string) {
  * @param {String} privKey (private key)
  * @return {Sting} Public Key (uncompressed)
  */
-function privKeyToPubKey (privKey: string) {
+function privKeyToPubKey (privKey: string): string {
   const pkBuffer = Buffer.from(privKey, 'hex')
   var ecparams = ecurve.getCurveByName('secp256k1')
   var curvePt = ecparams.G.multiply(bigi.fromBuffer(pkBuffer))
@@ -42,7 +42,7 @@ function privKeyToPubKey (privKey: string) {
  * @param {String} pubKey (public key)
  * @return {Sting} zencash address
  */
-function pubKeyToAddr (pubKey: string) {
+function pubKeyToAddr (pubKey: string): string {
   const hash160 = zcrypto.hash160(Buffer.from(pubKey, 'hex'))
   return bs58check.encode(Buffer.from(zconfig.pubKeyHash +  hash160, 'hex')).toString('hex')
 }

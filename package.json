@@ -20,6 +20,7 @@
   },
   "scripts": {
     "build": "babel src/ -d lib/",
+    "watch-build": "babel --watch src/ -d lib/",
     "prepublic": "yarn run build",
     "test": "mocha"
   },
