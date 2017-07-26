@@ -11,6 +11,19 @@ const OP_EQUALVERIFY = '88'
 const OP_CHECKSIG = 'ac'
 const OP_CHECKBLOCKATHEIGHT = 'b4'
 const OP_EQUAL = '87'
+const OP_REVERSED = '89'
+
+/*
+ * Given a hex string, get the length of it in bytes
+ * ** NOT string.length, but convert it into bytes
+ *    and return the length of that in bytes in hex
+ * @param {String} hexStr
+ * return {String} Length of hexStr in bytes
+ */
+function getStringBufferLength(hexStr: string): string{    
+    const _tmpBuf = Buffer.from(hexStr, 'hex').length
+    return Buffer.from([_tmpBuf]).toString('hex')    
+}
 
 /*
  * Given an address, generates a pubkeyhash type script needed for the transaction
@@ -19,9 +32,47 @@ const OP_EQUAL = '87'
  */
 function mkPubkeyHashScript(address: string): string{    
     var addrHex = bs58check.decode(address).toString('hex')
-    var subAddrHex = addrHex.substring(2, addrHex.length) // Cut out the '00' (we also only want 14 bytes instead of 16)
+    var subAddrHex = addrHex.substring(4, addrHex.length) // Cut out the '00' (we also only want 14 bytes instead of 16)    
     // '14' is the length of the subAddrHex (in bytes)
     return OP_DUP + OP_HASH160 + '14' + subAddrHex + OP_EQUALVERIFY + OP_CHECKSIG    
+}
+
+/* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
+ * Given an address, generates a pubkeyhash type script needed for the transaction
+ * @param {String} address
+ * return {String} pubKeyScript
+ */
+function mkPubkeyHashReplayScript(address: string): string{    
+    var addrHex = bs58check.decode(address).toString('hex')
+
+    // Cut out the first 4 bytes (pubKeyHash)
+    var subAddrHex = addrHex.substring(4, addrHex.length)
+    
+    // TODO: change this so it gets block hash and height via REST API
+    var blockHeight = 141340
+
+    var blockHeightBuffer = Buffer.alloc(4)
+    blockHeightBuffer.writeUInt32LE(blockHeight)
+    if (blockHeightBuffer[3] === 0x00){
+        var temp_buf = new Buffer(3);
+        temp_buf.fill(blockHeightBuffer, 0, 3)
+        blockHeightBuffer = temp_buf
+    }
+    var blockHeightHex = blockHeightBuffer.toString('hex')
+    var blockHeightLength = getStringBufferLength(blockHeightHex)
+
+    // Need to reverse it    
+    var blockHash = '000000014a2459b17f8c2980a72751730239883bb9ac4542e5979ff951e4fa69'
+    var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
+    var blockHashLength = getStringBufferLength(blockHashHex)
+
+    // '14' is the length of the subAddrHex (in bytes)
+    return (
+        OP_DUP + OP_HASH160 + '14' +
+        subAddrHex + OP_EQUALVERIFY + OP_CHECKSIG +
+        blockHashLength + blockHashHex + blockHeightLength +
+        blockHeightHex + OP_CHECKBLOCKATHEIGHT
+    )
 }
 
 /*
@@ -47,8 +98,8 @@ function addressToScript(address: string): string{
         return mkScriptHashScript(address)
     }
 
-    // P2PKH starts with a 0
-    return mkPubkeyHashScript(address)
+    // P2PKH-replay starts with a 0
+    return mkPubkeyHashReplayScript(address)
 }
 
 /*
@@ -58,7 +109,7 @@ function addressToScript(address: string): string{
  * @param {Int} Amount of zencash to send (in satoshis)
  * @return {String} raw transaction
  */
-function createRawTranscation (history: {txid: string, vout: number, value: number, address: string}[], recipients: {satoshis: number, address: string}[]) {
+function createRawTransaction (history: {txid: string, vout: number, value: number, address: string}[], recipients: {satoshis: number, address: string}[]) {
     var _buf = Buffer.alloc(4)
     var _buf32 = Buffer.alloc(8)
 
@@ -86,8 +137,8 @@ function createRawTranscation (history: {txid: string, vout: number, value: numb
 
         // Want the script length in bytes
         const scriptByteLength = Buffer.from(i.script, 'hex').length
-        // Script                
 
+        // Script                
         serialized_transaction += Buffer.from([scriptByteLength]).toString('hex')
         serialized_transaction += i.script
 
@@ -101,10 +152,10 @@ function createRawTranscation (history: {txid: string, vout: number, value: numb
         _buf32.writeUInt32LE(o.satoshis, 0)
         
         // Want the script length in bytes
-        const scriptByteLength = Buffer.from(o.script, 'hex').length
+        const scriptByteLength = getStringBufferLength(o.script)
 
         serialized_transaction += _buf32.toString('hex')
-        serialized_transaction += Buffer.from([scriptByteLength]).toString('hex')        
+        serialized_transaction += scriptByteLength
         serialized_transaction += o.script
     })
 
@@ -115,10 +166,10 @@ function createRawTranscation (history: {txid: string, vout: number, value: numb
     return serialized_transaction
 }
 
-module.exports = {
-  createRawTranscationv: createRawTranscation,
+module.exports = {  
   mkPubkeyHashScript: mkPubkeyHashScript,
+  mkPubkeyHashReplayScript: mkPubkeyHashReplayScript,
   mkScriptHashScript: mkScriptHashScript,
   addressToScript: addressToScript,
-  createRawTranscation: createRawTranscation
+  createRawTransaction: createRawTransaction
 }
