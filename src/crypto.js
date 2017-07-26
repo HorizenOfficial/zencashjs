@@ -28,7 +28,7 @@ function hash160 (buffer: Buffer): string {
 }
 
 module.exports = {
-  hash160: hash160,  
+  hash160: hash160,
   ripemd160: ripemd160,
   sha1: sha1,
   sha256: sha256,
