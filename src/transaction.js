@@ -187,7 +187,7 @@ function serializeTx (txObj: TXOBJ): string {
   serializedTx += _buf16.toString('hex')
 
   // History
-  serializedTx += Buffer.from([txObj.ins.length]).toString('hex')
+  serializedTx += numToVarInt(txObj.ins.length)
   txObj.ins.map(function (i) {
     // Txids and vouts
     _buf16.writeUInt16LE(i.output.vout, 0)
@@ -203,7 +203,7 @@ function serializeTx (txObj: TXOBJ): string {
   })
 
   // Outputs
-  serializedTx += Buffer.from([txObj.outs.length]).toString('hex')
+  serializedTx += numToVarInt(txObj.outs.length)
   txObj.outs.map(function (o) {
     // Write 64bit buffers
     // JS only supports 56 bit
