@@ -73,6 +73,27 @@ function getStringBufferLength (hexStr: string): string {
  * @param {String} address
  * return {String} pubKeyScript
  */
+function mkPubkeyHashScript (address: string): string {
+  var addrHex = bs58check.decode(address).toString('hex')
+
+  // Cut out the first 4 bytes (pubKeyHash)
+  var subAddrHex = addrHex.substring(4, addrHex.length)
+
+  return (
+    zopcodes.OP_DUP +
+    zopcodes.OP_HASH160 +
+    getStringBufferLength(subAddrHex) +
+    subAddrHex +
+    zopcodes.OP_EQUALVERIFY +
+    zopcodes.OP_CHECKSIG
+  )
+}
+
+/* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
+ * Given an address, generates a pubkeyhash type script needed for the transaction
+ * @param {String} address
+ * return {String} pubKeyScript
+ */
 function mkPubkeyHashReplayScript (address: string): string {
   var addrHex = bs58check.decode(address).toString('hex')
 
@@ -276,16 +297,13 @@ function signTx (
   // Prepare signing
   const pubKey = zutils.privKeyToPubKey(privKey)
   const address = zutils.pubKeyToAddr(pubKey)
-  const script = mkPubkeyHashReplayScript(address)
+  const script = addressToScript(address)
 
   // Prepare our signature
   const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
   const signingTxHex: string = serializeTx(signingTx) // Convert to hex string
-  const signingTxWithHashcode = signingTxHex + _buf16.toString('hex')
-
-  // Idek why I but if i convert it to buffer and apply
-  // sha256x2 on it it doesn't work...
-  const msg = zcrypto.sha256x2_str(signingTxWithHashcode)
+  const signingTxWithHashcode = signingTxHex + _buf16.toString('hex')  
+  const msg = zcrypto.sha256x2(Buffer.from(signingTxWithHashcode, 'hex'))
   const rawsig = secp256k1
     .sign(Buffer.from(msg, 'hex'), Buffer.from(privKey, 'hex'))
     .signature.toString('hex')
@@ -295,20 +313,18 @@ function signTx (
   var b2 = rawsig.substr(64, 128)  
 
   if ('89abcdef'.indexOf(b1[0]) != -1) {
-    b1 = '00' + b1
+    b1 = '00' + b1  
   }
   if ('89abcdef'.indexOf(b2[0]) != -1) {
-    b2 = '00' + b2
-  }  
+    b2 = '00' + b2    
+  }    
 
   // http://www.righto.com/2014/02/bitcoins-hard-way-using-raw-bitcoin.html
   // 02 is the integer, 30 is the sequence
   var left = '02' + getStringBufferLength(b1) + b1
   var right = '02' + getStringBufferLength(b2) + b2  
   const sig = '30' + getStringBufferLength(left + right) + left + right
-  const sigAndHashcode = sig + Buffer.from([hashcode]).toString('hex')
-
-  console.log('sigAndHashcode: ' + sigAndHashcode)
+  const sigAndHashcode = sig + Buffer.from([hashcode]).toString('hex')  
 
   // Chuck it back into txObj
   txObj.ins[i].script =
@@ -323,6 +339,7 @@ module.exports = {
   getStringBufferLength: getStringBufferLength,
   mkPubkeyHashReplayScript: mkPubkeyHashReplayScript,
   mkScriptHashScript: mkScriptHashScript,
+  mkPubkeyHashScript: mkPubkeyHashScript,
   numToVarInt: numToVarInt,
   signatureForm: signatureForm,
   serializeTx: serializeTx,

@@ -21,12 +21,6 @@ function sha256x2 (buffer: Buffer): string {
   return sha256(Buffer.from(sha256(buffer), 'hex'))
 }
 
-// Man fuck these string and buffer 
-// non deterministic functions. I need types.
-function sha256x2_str (s: string): string {
-  return sha256(Buffer.from(createHash('sha256').update(s).digest('hex'), 'hex'))
-}
-
 function hash160 (buffer: Buffer): string {
   const sha = sha256(buffer)
   const hash160 = ripemd160(Buffer.from(sha, 'hex'))
@@ -38,6 +32,5 @@ module.exports = {
   ripemd160: ripemd160,
   sha1: sha1,
   sha256: sha256,
-  sha256x2: sha256x2,
-  sha256x2_str: sha256x2_str
+  sha256x2: sha256x2
 }
