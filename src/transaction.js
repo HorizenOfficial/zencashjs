@@ -1,8 +1,9 @@
 // @flow
 var bs58check = require('bs58check')
+var secp256k1 = require('secp256k1')
+var zconfig = require('./config')
 var zcrypto = require('./crypto')
 var zutils = require('./utils')
-var secp256k1 = require('secp256k1')
 
 /* Useful OP codes for the scripting language
  * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/script.h
@@ -42,8 +43,6 @@ declare type TXOBJ = {
 declare type HISTORY = {
   txid: string,
   vout: number,
-  value: number,
-  address: string,
 }
 
 // RECIPIENTS Structure
@@ -311,10 +310,10 @@ function signTx (
   var b2 = rawsig.substr(64, 128)
 
   if ('89abcdef'.indexOf(b1[0]) != -1) {
-    b1 = '00' + b1
+    b1 = zconfig.pubKeyHash + b1
   }
   if ('89abcdef'.indexOf(b2[0]) != -1) {
-    b2 = '00' + b2
+    b2 = zconfig.pubKeyHash + b2
   }
 
   var left = '02' + getStringBufferLength(b1) + b1
