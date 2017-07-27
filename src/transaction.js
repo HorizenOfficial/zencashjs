@@ -5,17 +5,7 @@ var int64buffer = require('int64-buffer')
 var zconfig = require('./config')
 var zcrypto = require('./crypto')
 var zutils = require('./utils')
-
-/* Useful OP codes for the scripting language
- * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/script.h
- */
-const OP_DUP = '76'
-const OP_HASH160 = 'a9'
-const OP_EQUALVERIFY = '88'
-const OP_CHECKSIG = 'ac'
-const OP_CHECKBLOCKATHEIGHT = 'b4'
-const OP_EQUAL = '87'
-const OP_REVERSED = '89'
+var zopcodes = require('./opcodes')
 
 /* SIGHASH Codes
  * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/interpreter.h
@@ -107,17 +97,17 @@ function mkPubkeyHashReplayScript (address: string): string {
 
   // '14' is the length of the subAddrHex (in bytes)
   return (
-    OP_DUP +
-    OP_HASH160 +
+    zopcodes.OP_DUP +
+    zopcodes.OP_HASH160 +
     getStringBufferLength(subAddrHex) +
     subAddrHex +
-    OP_EQUALVERIFY +
-    OP_CHECKSIG +
+    zopcodes.OP_EQUALVERIFY +
+    zopcodes.OP_CHECKSIG +
     getStringBufferLength(blockHashHex) +
     blockHashHex +
     getStringBufferLength(blockHeightHex) +
     blockHeightHex +
-    OP_CHECKBLOCKATHEIGHT
+    zopcodes.OP_CHECKBLOCKATHEIGHT
   )
 }
 
@@ -130,7 +120,7 @@ function mkScriptHashScript (address: string): string {
   var addrHex = bs58check.decode(address).toString('hex')
   var subAddrHex = addrHex.substring(4, addrHex.length) // Cut out the '00' (we also only want 14 bytes instead of 16)
   // '14' is the length of the subAddrHex (in bytes)
-  return OP_HASH160 + '14' + subAddrHex + OP_EQUAL
+  return zopcodes.OP_HASH160 + '14' + subAddrHex + zopcodes.OP_EQUAL
 }
 
 /*
@@ -140,7 +130,7 @@ function mkScriptHashScript (address: string): string {
  */
 function addressToScript (address: string): string {
   // P2SH starts with a 3 or 2
-  if (address[0] === '3' || address[0] === '2') {
+  if (address[1] === 's' || address[0] === 't') {
     return mkScriptHashScript(address)
   }
 

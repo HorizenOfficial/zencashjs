@@ -11,4 +11,4 @@ module.exports = {
   OP_CHECKBLOCKATHEIGHT: 'b4',
   OP_EQUAL: '87',
   OP_REVERSED: '89'
-};
+}
