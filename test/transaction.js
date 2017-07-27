@@ -6,7 +6,7 @@ it('serializeTx() should be deterministic', function () {
   var txobj = zencashjs.transaction.createRawTx([{txid: '2704a392f88573cb26775e6cf394e4039b430a2375becac454e3e57c88aed59d', vout: 0}], [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 90000}])
   var txobj_serialized = zencashjs.transaction.serializeTx(txobj)
 
-  expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff0100000000905f01003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b400000000')
+  expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01905f0100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b400000000')
 })
 
 /* 

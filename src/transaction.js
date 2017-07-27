@@ -1,6 +1,7 @@
 // @flow
 var bs58check = require('bs58check')
 var secp256k1 = require('secp256k1')
+var int64buffer = require('int64-buffer')
 var zconfig = require('./config')
 var zcrypto = require('./crypto')
 var zutils = require('./utils')
@@ -222,11 +223,8 @@ function serializeTx (txObj: TXOBJ): string {
     // https://stackoverflow.com/a/35743335
     var _buf32 = Buffer.alloc(8)
 
-    const _big = ~~(o.satoshis / 0xFFFFFFFF)
-    const _low = (o.satoshis % 0xFFFFFFFF) - _big
-    
-    _buf32.writeUInt32LE(_big, 0)
-    _buf32.writeUInt32LE(_low, 4)    
+    _buf32.writeInt32LE(o.satoshis & -1, 0)
+    _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
 
     serializedTx += _buf32.toString('hex')
     serializedTx += getStringBufferLength(o.script)
