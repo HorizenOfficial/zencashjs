@@ -90,7 +90,7 @@ function mkPubkeyHashReplayScript (address: string): string {
   var subAddrHex = addrHex.substring(4, addrHex.length)
 
   // TODO: change this so it gets block hash and height via REST API
-  var blockHeight = 141647
+  var blockHeight = 142091
 
   var blockHeightBuffer = Buffer.alloc(4)
   blockHeightBuffer.writeUInt32LE(blockHeight, 0)
@@ -99,14 +99,11 @@ function mkPubkeyHashReplayScript (address: string): string {
     temp_buf.fill(blockHeightBuffer, 0, 3)
     blockHeightBuffer = temp_buf
   }
-  var blockHeightHex = blockHeightBuffer.toString('hex')
-  var blockHeightLength = getStringBufferLength(blockHeightHex)
+  var blockHeightHex = blockHeightBuffer.toString('hex')  
 
   // Need to reverse it
-  var blockHash =
-    '000000024b96f9217cf787273dcf543479575dee71d4476ad5252d083389d7eb'
-  var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
-  var blockHashLength = getStringBufferLength(blockHashHex)
+  var blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
+  var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')  
 
   // '14' is the length of the subAddrHex (in bytes)
   return (
@@ -116,9 +113,9 @@ function mkPubkeyHashReplayScript (address: string): string {
     subAddrHex +
     OP_EQUALVERIFY +
     OP_CHECKSIG +
-    blockHashLength +
+    getStringBufferLength(blockHashHex) +
     blockHashHex +
-    blockHeightLength +
+    getStringBufferLength(blockHeightHex) +
     blockHeightHex +
     OP_CHECKBLOCKATHEIGHT
   )
@@ -220,7 +217,7 @@ function serializeTx (txObj: TXOBJ): string {
   txObj.outs.map(function (o) {
     // Write 64bit buffers
     // JS only supports 56 bit
-    // https://stackoverflow.com/a/35743335
+    // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/bufferutils.js#L25
     var _buf32 = Buffer.alloc(8)
 
     _buf32.writeInt32LE(o.satoshis & -1, 0)
