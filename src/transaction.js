@@ -4,7 +4,7 @@ var secp256k1 = require('secp256k1')
 var int64buffer = require('int64-buffer')
 var zconfig = require('./config')
 var zcrypto = require('./crypto')
-var zutils = require('./utils')
+var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 
 /* SIGHASH Codes
@@ -26,7 +26,7 @@ declare type TXOBJ = {
     output: { hash: string, vout: number },
     script: string,
     sequence: string,
-    prevScriptPubKey: string
+    prevScriptPubKey: string,
   }[],
   outs: { script: string, satoshis: number }[],
 }
@@ -35,7 +35,7 @@ declare type TXOBJ = {
 declare type HISTORY = {
   txid: string,
   vout: number,
-  scriptPubKey: string
+  scriptPubKey: string,
 }
 
 // RECIPIENTS Structure
@@ -77,7 +77,7 @@ function getStringBufferLength (hexStr: string): string {
  */
 function mkPubkeyHashScript (address: string): string {
   var addrHex = bs58check.decode(address).toString('hex')
-  
+
   // Remove 'WIF' format
   var subAddrHex = addrHex.substring(zconfig.pubKeyHash.length, addrHex.length)
 
@@ -98,7 +98,7 @@ function mkPubkeyHashScript (address: string): string {
  */
 function mkScriptHashScript (address: string): string {
   var addrHex = bs58check.decode(address).toString('hex')
-  
+
   // Remove 'WIF' format
   var subAddrHex = addrHex.substring(zconfig.pubKeyHash.length, addrHex.length)
 
@@ -106,7 +106,7 @@ function mkScriptHashScript (address: string): string {
     zopcodes.OP_HASH160 +
     getStringBufferLength(subAddrHex) +
     subAddrHex +
-    zopcodes.OP_EQUAL    
+    zopcodes.OP_EQUAL
   )
 }
 
@@ -115,11 +115,15 @@ function mkScriptHashScript (address: string): string {
  * @param {String} address
  * return {String} pubKeyScript
  */
-function mkPubkeyHashReplayScript (address: string, blockHeight: number, blockHash: string): string {
+function mkPubkeyHashReplayScript (
+  address: string,
+  blockHeight: number,
+  blockHash: string
+): string {
   var addrHex = bs58check.decode(address).toString('hex')
 
   // Cut out the first 4 bytes (pubKeyHash)
-  var subAddrHex = addrHex.substring(4, addrHex.length)  
+  var subAddrHex = addrHex.substring(4, addrHex.length)
 
   // Minimal encoding
   var blockHeightBuffer = Buffer.alloc(4)
@@ -153,7 +157,11 @@ function mkPubkeyHashReplayScript (address: string, blockHeight: number, blockHa
  * @param {String} address
  * return {String} scriptHash script
  */
-function mkScriptHashReplayScript (address: string, blockHeight: number, blockHash: string): string {
+function mkScriptHashReplayScript (
+  address: string,
+  blockHeight: number,
+  blockHash: string
+): string {
   var addrHex = bs58check.decode(address).toString('hex')
   var subAddrHex = addrHex.substring(4, addrHex.length) // Cut out the '00' (we also only want 14 bytes instead of 16)
 
@@ -164,7 +172,7 @@ function mkScriptHashReplayScript (address: string, blockHeight: number, blockHa
   }
   var blockHeightHex = blockHeightBuffer.toString('hex')
 
-  // Need to reverse it  
+  // Need to reverse it
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
   // '14' is the length of the subAddrHex (in bytes)
@@ -186,20 +194,22 @@ function mkScriptHashReplayScript (address: string, blockHeight: number, blockHa
  * @param {String} address
  * return {String} output script
  */
-function addressToScript (address: string, blockHeight: number, blockHash: string): string {
+function addressToScript (
+  address: string,
+  blockHeight: number,
+  blockHash: string
+): string {
   // Hardfork at block 139200, is when replay takes action
-  if (blockHeight >= 139200){
+  if (blockHeight >= 139200) {
     // P2SH replay starts with a 's', or 't'
     if (address[1] === 's' || address[0] === 't') {
       return mkScriptHashReplayScript(address, blockHeight, blockHash)
-    }  
+    }
 
     // P2PKH-replay is a replacement for P2PKH
     // P2PKH-replay starts with a 0
     return mkPubkeyHashReplayScript(address, blockHeight, blockHash)
-  }
-
-  else{
+  } else {
     if (address[1] === 's' || address[0] === 't') {
       return mkScriptHashScript(address)
     }
@@ -219,7 +229,7 @@ function signatureForm (
   hashcode: number
 ): TXOBJ {
   // Copy object so we don't rewrite it
-  var newTx = JSON.parse(JSON.stringify(txObj));
+  var newTx = JSON.parse(JSON.stringify(txObj))
 
   for (var j = 0; j < newTx.ins.length; j++) {
     newTx.ins[j].script = ''
@@ -300,10 +310,15 @@ function serializeTx (txObj: TXOBJ): string {
  * @param {Int} Amount of zencash to send (in satoshis)
  * @return {TXOBJ} Transction Object (see types.js for info about structure)
  */
-function createRawTx (history: HISTORY[], recipients: RECIPIENTS[], blockHeight: number, blockHash: string): TXOBJ {
+function createRawTx (
+  history: HISTORY[],
+  recipients: RECIPIENTS[],
+  blockHeight: number,
+  blockHash: string
+): TXOBJ {
   var txObj = { locktime: 0, version: 1, ins: [], outs: [] }
 
-  txObj.ins = history.map(function (h) {    
+  txObj.ins = history.map(function (h) {
     return {
       output: { hash: h.txid, vout: h.vout },
       script: '',
@@ -312,7 +327,10 @@ function createRawTx (history: HISTORY[], recipients: RECIPIENTS[], blockHeight:
     }
   })
   txObj.outs = recipients.map(function (o) {
-    return { script: addressToScript(o.address, blockHeight, blockHash), satoshis: o.satoshis }
+    return {
+      script: addressToScript(o.address, blockHeight, blockHash),
+      satoshis: o.satoshis
+    }
   })
 
   return txObj
@@ -336,49 +354,43 @@ function signTx (
     hashcode = SIGHASH_ALL
   }
   // Make a copy
-  var txObj = JSON.parse(JSON.stringify(_txObj));
+  var txObj = JSON.parse(JSON.stringify(_txObj))
 
   // Buffer
   var _buf16 = Buffer.alloc(4)
   _buf16.writeUInt16LE(hashcode, 0)
 
   // Prepare signing  
-  const pubKey = zutils.privKeyToPubKey(privKey)
-  const address = zutils.pubKeyToAddr(pubKey)  
+  const script = txObj.ins[i].prevScriptPubKey
 
-  // When the address was spent  
-  const script = txObj.ins[i].prevScriptPubKey  
-
-  // Prepare our signature
+  // Prepare our signature  
   const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
-  const signingTxHex: string = serializeTx(signingTx) // Convert to hex string
+  const signingTxHex: string = serializeTx(signingTx)
   const signingTxWithHashcode = signingTxHex + _buf16.toString('hex')
+
+  // Sha256 it twice, according to spec
   const msg = zcrypto.sha256x2(Buffer.from(signingTxWithHashcode, 'hex'))
-  const rawsig = secp256k1
-    .sign(Buffer.from(msg, 'hex'), Buffer.from(privKey, 'hex'))
-    .signature.toString('hex')
 
-  // Encode signature
-  var b1 = rawsig.substr(0, 64)
-  var b2 = rawsig.substr(64, 128)
+  // Signing it  
+  const rawsig = secp256k1.sign(
+    Buffer.from(msg, 'hex'),
+    Buffer.from(privKey, 'hex')
+  ).signature
 
-  if ('89abcdef'.indexOf(b1[0]) != -1) {
-    b1 = '00' + b1
-  }
-  if ('89abcdef'.indexOf(b2[0]) != -1) {
-    b2 = '00' + b2
-  }
+  // Convert it to DER format
+  // Appending 01 to it cause
+  // ScriptSig = <varint of total sig length> <SIG from code, including appended 01 SIGNHASH> <length of pubkey (0x21 or 0x41)> <pubkey>
+  // https://bitcoin.stackexchange.com/a/36481
+  const signatureDER = secp256k1.signatureExport(rawsig).toString('hex') + '01'
 
-  // http://www.righto.com/2014/02/bitcoins-hard-way-using-raw-bitcoin.html
-  // 02 is the integer, 30 is the sequence
-  var left = '02' + getStringBufferLength(b1) + b1
-  var right = '02' + getStringBufferLength(b2) + b2
-  const sig = '30' + getStringBufferLength(left + right) + left + right
-  const sigAndHashcode = sig + Buffer.from([hashcode]).toString('hex')
-
-  // Chuck it back into txObj
+  // Chuck it back into txObj and add pubkey
+  const pubKey = secp256k1.publicKeyCreate(Buffer.from(privKey, 'hex')).toString('hex') 
+  
   txObj.ins[i].script =
-    getStringBufferLength(sigAndHashcode) + sigAndHashcode + getStringBufferLength(pubKey) + pubKey
+    getStringBufferLength(signatureDER) +
+    signatureDER +
+    getStringBufferLength(pubKey) +
+    pubKey
 
   return txObj
 }
