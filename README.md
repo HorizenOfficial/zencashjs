@@ -6,7 +6,7 @@ Dead simple and easy to use JavaScript based ZenCASH library. Inspired by [pybit
 git clone https://github.com/kendricktan/zencashjs.git
 cd zencashjs
 yarn install
-yarn build
+yarn watch-build
 
 # Dev flow
 flow status
@@ -30,10 +30,21 @@ var pubKey = zencashjs.utils.privKeyToPubKey(priv)
 var zAddr = zencashjs.utils.pubKeyToAddr(pubKey)
 // znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf
 
-// To create and sign a raw transaction
-var txobj = zencashjs.transaction.createRawTx([{txid: '196173ec34d22a52cc689a21d01dd33b633671cbe1141e7e66240c7f3b4ccf7b', vout: 0}], [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 100000}])
+// To create and sign a raw transaction at BLOCKHEIGHT and BLOCKHASH
+const blockHeight = 142091
+const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
+
+var txobj = zencashjs.transaction.createRawTx(
+  [{
+      txid: '196173ec34d22a52cc689a21d01dd33b633671cbe1141e7e66240c7f3b4ccf7b', vout: 0,
+      scriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
+  }],
+  [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 100000}],
+  blockHeight,
+  blockHash
+)
 // zencashjs.transaction.serializeTx(txobj)
-// 01000000017bcf4c3b7f0c24667e1e14e1cb7136633bd31dd0219a68cc522ad234ec7361190000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000
+// 01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000
 
 var tx0 = zencashjs.transaction.signTx(txobj, 0, '2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c')
 // zencashjs.transaction.serializeTx(tx0)

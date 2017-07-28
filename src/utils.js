@@ -50,7 +50,7 @@ function privKeyToPubKey (privKey: string): string {
  * @param {String} privKey (private key)
  * @return {Sting} Public Key (uncompressed)
  */
-function WifToPrivKey (wifPk: string): string {
+function WIFToPrivKey (wifPk: string): string {
   var og = bs58check.decode(wifPk, 'hex').toString('hex')
   og = og.substr(2, og.length) // remove WIF format ('80')
 
@@ -79,5 +79,5 @@ module.exports = {
   privKeyToWIF: privKeyToWIF,
   privKeyToPubKey: privKeyToPubKey,
   pubKeyToAddr: pubKeyToAddr,
-  WifToPrivKey: WifToPrivKey
+  WIFToPrivKey: WIFToPrivKey
 }
