@@ -1,6 +1,6 @@
 {
   "name": "zencashjs",
-  "version": "1.0.0a",
+  "version": "v1.0.0a",
   "description": "Dead easy to use Zencash JavaScript based library",
   "main": "./lib/index.js",
   "repository": "https://github.com/kendricktan/zencashjs.git",
