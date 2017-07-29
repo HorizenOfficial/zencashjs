@@ -49,6 +49,7 @@ function numToBytes (num: number, bytes: number) {
   if (bytes == 0) return []
   else return [num % 256].concat(numToBytes(Math.floor(num / 256), bytes - 1))
 }
+
 function numToVarInt (num: number): string {
   var b
   if (num < 253) b = [num]
@@ -113,6 +114,8 @@ function mkScriptHashScript (address: string): string {
 /* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
  * Given an address, generates a pubkeyhash replay type script needed for the transaction
  * @param {String} address
+ * @param {Number} blockHeight
+ * @param {Number} blockHash
  * return {String} pubKeyScript
  */
 function mkPubkeyHashReplayScript (
@@ -155,6 +158,8 @@ function mkPubkeyHashReplayScript (
 /*
  * Given an address, generates a script hash replay type script needed for the transaction
  * @param {String} address
+ * @param {Number} blockHeight
+ * @param {Number} blockHash
  * return {String} scriptHash script
  */
 function mkScriptHashReplayScript (
@@ -192,6 +197,8 @@ function mkScriptHashReplayScript (
 /*
  * Given an address, generates an output script
  * @param {String} address
+ * @param {Number} blockHeight
+ * @param {Number} blockHash
  * return {String} output script
  */
 function addressToScript (
@@ -220,6 +227,9 @@ function addressToScript (
 /*
  * Signature hashing for TXOBJ
  * @param {String} address
+ * @param {Number} i, which transaction input to sign
+ * @param {String} hex string of script
+ * @param {String} hash code (SIGHASH_ALL, SIGHASH_NONE...)
  * return {String} output script
  */
 function signatureForm (
@@ -254,7 +264,7 @@ function signatureForm (
 /*
  * Serializes a TXOBJ into hex string
  * @param {Object} txObj
- * return {String} output script
+ * return {String} hex string of txObj
  */
 function serializeTx (txObj: TXOBJ): string {
   var serializedTx = ''
@@ -305,10 +315,11 @@ function serializeTx (txObj: TXOBJ): string {
 
 /*
  * Creates a raw transaction
- * @param {[object]} history, array of history in the format: [{txid: 'transaction_id', vout: vout, value: value (insatoshi), address: txout address}]
- * @param {[object]} output address on where to send coins to [{value}]
- * @param {Int} Amount of zencash to send (in satoshis)
- * @return {TXOBJ} Transction Object (see types.js for info about structure)
+ * @param {[HISTORY]} history type, array of transaction history
+ * @param {[RECIPIENTS]} recipient type, array of address on where to send coins to 
+ * @param {Number} blockHeight (latest - 300)
+ * @param {String} blockHash of blockHeight
+ * @return {TXOBJ} Transction Object (see TXOBJ type for info about structure)
  */
 function createRawTx (
   history: HISTORY[],
@@ -340,19 +351,21 @@ function createRawTx (
  * Signs the raw transaction
  * @param {String} rawTx raw transaction
  * @param {Int} i
- * @param {privKey} privKey (not WIF format)
- * @param {hashcode} hashcode
+ * @param {privKey} privKey (not WIF format) 
+ * @param {compressPubKey} compress public key before appending to scriptSig? (default false)
+ * @param {hashcode} hashcode (default SIGHASH_ALL)
  * return {String} signed transaction
  */
 function signTx (
   _txObj: TXOBJ,
   i: number,
-  privKey: string,
-  hashcode: number
+  privKey: string,  
+  compressPubKey: ?boolean,
+  hashcode: ?number
 ): TXOBJ {
-  if (hashcode === undefined) {
-    hashcode = SIGHASH_ALL
-  }
+  hashcode = hashcode || SIGHASH_ALL
+  compressPubKey = compressPubKey || false
+
   // Make a copy
   var txObj = JSON.parse(JSON.stringify(_txObj))
 
@@ -384,7 +397,8 @@ function signTx (
   const signatureDER = secp256k1.signatureExport(rawsig).toString('hex') + '01'
 
   // Chuck it back into txObj and add pubkey
-  const pubKey = secp256k1.publicKeyCreate(Buffer.from(privKey, 'hex')).toString('hex') 
+  // WHAT? If it fails, uncompress/compress it and it should work...
+  const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)  
   
   txObj.ins[i].script =
     getStringBufferLength(signatureDER) +

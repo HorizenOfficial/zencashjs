@@ -10,18 +10,8 @@ var zconfig = require('./config')
  * @param {String} privKey (private key)
  * @return {Sting} WIF format (uncompressed)
  */
-function makePrivKey (phrase: string): string {
+function mkPrivKey (phrase: string): string {
   return zcrypto.sha256(Buffer.from(phrase, 'utf-8'))
-}
-
-/*
- * Converts a private key to WIF format
- * @param {String} privKey (private key)
- * @return {Sting} WIF format (uncompressed)
- */
-function privKeyToWIF (privKey: string): string {
-  // Add '01' to the end if you want the compressed version
-  return bs58check.encode(Buffer.from(zconfig.wif + privKey, 'hex'))
 }
 
 /*
@@ -37,11 +27,13 @@ function privKeyToWIF (privKey: string): string {
 /*
  * Returns private key's public Key
  * @param {String} privKey (private key)
- * @return {Sting} Public Key (uncompressed)
+ * @return {Sting} Public Key (default: uncompressed)
  */
-function privKeyToPubKey (privKey: string): string {
+function privKeyToPubKey (privKey: string, toCompressed: boolean): string {
+  toCompressed = toCompressed || false
+
   const pkBuffer = Buffer.from(privKey, 'hex')
-  var publicKey = secp256k1.publicKeyCreate(pkBuffer, false)
+  var publicKey = secp256k1.publicKeyCreate(pkBuffer, toCompressed)
   return publicKey.toString('hex')
 }
 
@@ -54,7 +46,7 @@ function WIFToPrivKey (wifPk: string): string {
   var og = bs58check.decode(wifPk, 'hex').toString('hex')
   og = og.substr(2, og.length) // remove WIF format ('80')
 
-  // the '01' at the end to 'compress it' during WIF conversion
+  // remove the '01' at the end to 'compress it' during WIF conversion
   if (og.length > 64){
     og = og.substr(0, 64)
   }
@@ -75,7 +67,7 @@ function pubKeyToAddr (pubKey: string): string {
 }
 
 module.exports = {
-  makePrivKey: makePrivKey,
+  mkPrivKey: mkPrivKey,
   privKeyToWIF: privKeyToWIF,
   privKeyToPubKey: privKeyToPubKey,
   pubKeyToAddr: pubKeyToAddr,

@@ -2,8 +2,8 @@ var zencashjs = require('..')
 var chai = require('chai')
 var expect = chai.expect
 
-it('MakePrivateKey() should be deterministic', function () {
-  var priv = zencashjs.address.makePrivKey(
+it('MkPrivateKey() should be deterministic', function () {
+  var priv = zencashjs.address.mkPrivKey(
     'chris p. bacon, defender of the guardians'
   )
   expect(priv).to.equal(

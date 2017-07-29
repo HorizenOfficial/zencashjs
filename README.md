@@ -18,7 +18,7 @@ yarn test
 ```javascript
 var zencash = require('zencashjs')
 
-var priv = zencashjs.address.makePrivKey('chris p. bacon, defender of the guardians')
+var priv = zencashjs.address.mkPrivKey('chris p. bacon, defender of the guardians')
 // 2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c
 
 var privWIF = zencashjs.address.privKeyToWIF(priv)
