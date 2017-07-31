@@ -6,9 +6,9 @@ var zcrypto = require('./crypto')
 var zconfig = require('./config')
 
 /*
- * Converts a private key to WIF format
- * @param {String} privKey (private key)
- * @return {Sting} WIF format (uncompressed)
+ * Makes a private key
+ * @param {String} phrase (Password phrase)
+ * @return {Sting} Private key
  */
 function mkPrivKey (phrase: string): string {
   return zcrypto.sha256(Buffer.from(phrase, 'utf-8'))
@@ -17,16 +17,22 @@ function mkPrivKey (phrase: string): string {
 /*
  * Converts a private key to WIF format
  * @param {String} privKey (private key)
+ * @param {boolean} toCompressed (Convert to WIF compressed key or nah)
  * @return {Sting} WIF format (uncompressed)
  */
-function privKeyToWIF (privKey: string): string {
-  // Add '01' to the end if you want the compressed version
+function privKeyToWIF (privKey: string, toCompressed: boolean): string {
+  toCompressed = toCompressed || false
+
+  if (toCompressed)
+    privKey = privKey + '01'  
+  
   return bs58check.encode(Buffer.from(zconfig.wif + privKey, 'hex'))
 }
 
 /*
  * Returns private key's public Key
  * @param {String} privKey (private key)
+ * @param {boolean} toCompressed (Convert to public key compressed key or nah)
  * @return {Sting} Public Key (default: uncompressed)
  */
 function privKeyToPubKey (privKey: string, toCompressed: boolean): string {
