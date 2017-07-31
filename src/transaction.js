@@ -2,10 +2,12 @@
 var bs58check = require('bs58check')
 var secp256k1 = require('secp256k1')
 var int64buffer = require('int64-buffer')
+var varuint = require('varuint-bitcoin')
 var zconfig = require('./config')
 var zcrypto = require('./crypto')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
+var zbufferutils = require('./bufferutils')
 
 /* SIGHASH Codes
  * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/interpreter.h
@@ -262,6 +264,74 @@ function signatureForm (
 }
 
 /*
+ * Deserializes a hex string into a TXOBJ
+ * @param {String} hex string
+ * @return {Object} txOBJ
+ */
+function deserializeTx (hexStr: string): TXOBJ {
+  const buf = Buffer.from(hexStr, 'hex')
+  var offset = 0
+
+  // Out txobj
+  var txObj = { ins: [], outs: [] }
+
+  // Version
+  txObj.version = buf.readUInt32LE(offset)
+  offset += 4
+
+  // Vins
+  var vinLen = varuint.decode(buf, offset)
+  offset += varuint.decode.bytes
+  for (var i = 0; i < vinLen; i++) {
+    const hash = buf.slice(offset, offset + 32)
+    offset += 32
+
+    const vout = buf.readUInt32LE(offset)
+    offset += 4
+
+    const scriptLen = varuint.decode(buf, offset)
+    offset += varuint.decode.bytes
+
+    const script = buf.slice(offset, offset + scriptLen)
+    offset += scriptLen
+
+    const sequence = buf.slice(offset, offset + 4).toString('hex')
+    offset += 4
+
+    txObj.ins.push({
+      output: { hash: hash.reverse().toString('hex'), vout: vout },
+      script: script.toString('hex'),
+      sequence: sequence
+    })
+  }
+
+  // Vouts
+  var voutLen = varuint.decode(buf, offset)
+  offset += varuint.decode.bytes
+  for (var i = 0; i < voutLen; i++) {
+    const satoshis = zbufferutils.readUInt64LE(buf, offset)
+    offset += 8
+
+    const scriptLen = varuint.decode(buf, offset)
+    offset += varuint.decode.bytes
+
+    const script = buf.slice(offset, offset + scriptLen)
+    offset += scriptLen
+
+    txObj.outs.push({
+      satoshis: satoshis,
+      script: script.toString('hex')
+    })
+  }
+
+  // Locktime
+  txObj.locktime = buf.readInt32LE(offset)
+  offset += 4
+
+  return txObj
+}
+
+/*
  * Serializes a TXOBJ into hex string
  * @param {Object} txObj
  * return {String} hex string of txObj
@@ -316,7 +386,7 @@ function serializeTx (txObj: TXOBJ): string {
 /*
  * Creates a raw transaction
  * @param {[HISTORY]} history type, array of transaction history
- * @param {[RECIPIENTS]} recipient type, array of address on where to send coins to 
+ * @param {[RECIPIENTS]} recipient type, array of address on where to send coins to
  * @param {Number} blockHeight (latest - 300)
  * @param {String} blockHash of blockHeight
  * @return {TXOBJ} Transction Object (see TXOBJ type for info about structure)
@@ -351,7 +421,7 @@ function createRawTx (
  * Signs the raw transaction
  * @param {String} rawTx raw transaction
  * @param {Int} i
- * @param {privKey} privKey (not WIF format) 
+ * @param {privKey} privKey (not WIF format)
  * @param {compressPubKey} compress public key before appending to scriptSig? (default false)
  * @param {hashcode} hashcode (default SIGHASH_ALL)
  * return {String} signed transaction
@@ -359,7 +429,7 @@ function createRawTx (
 function signTx (
   _txObj: TXOBJ,
   i: number,
-  privKey: string,  
+  privKey: string,
   compressPubKey: ?boolean,
   hashcode: ?number
 ): TXOBJ {
@@ -373,10 +443,10 @@ function signTx (
   var _buf16 = Buffer.alloc(4)
   _buf16.writeUInt16LE(hashcode, 0)
 
-  // Prepare signing  
+  // Prepare signing
   const script = txObj.ins[i].prevScriptPubKey
 
-  // Prepare our signature  
+  // Prepare our signature
   const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
   const signingTxHex: string = serializeTx(signingTx)
   const signingTxWithHashcode = signingTxHex + _buf16.toString('hex')
@@ -384,7 +454,7 @@ function signTx (
   // Sha256 it twice, according to spec
   const msg = zcrypto.sha256x2(Buffer.from(signingTxWithHashcode, 'hex'))
 
-  // Signing it  
+  // Signing it
   const rawsig = secp256k1.sign(
     Buffer.from(msg, 'hex'),
     Buffer.from(privKey, 'hex')
@@ -398,8 +468,8 @@ function signTx (
 
   // Chuck it back into txObj and add pubkey
   // WHAT? If it fails, uncompress/compress it and it should work...
-  const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)  
-  
+  const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)
+
   txObj.ins[i].script =
     getStringBufferLength(signatureDER) +
     signatureDER +
@@ -420,5 +490,6 @@ module.exports = {
   numToVarInt: numToVarInt,
   signatureForm: signatureForm,
   serializeTx: serializeTx,
+  deserializeTx: deserializeTx,
   signTx: signTx
 }

@@ -2,7 +2,7 @@ var zencashjs = require('..')
 var chai = require('chai')
 var expect = chai.expect
 
-it('serializeTx() should be deterministic', function () {
+it('serializeTx() and desrializeTx() should be deterministic', function () {
   const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
   const blockHeight = 142091
 
@@ -17,8 +17,15 @@ it('serializeTx() should be deterministic', function () {
     blockHash
   )
   var txobj_serialized = zencashjs.transaction.serializeTx(txobj)
+  var txobj_deserialized = zencashjs.transaction.deserializeTx(txobj_serialized)
 
-  expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
+  // Remove prevScriptPubKey since its not really an attribute
+  for (var i = 0; i < txobj.ins.length; i++){
+    delete txobj.ins[i].prevScriptPubKey
+  }
+
+  expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')  
+  expect(txobj_deserialized).to.deep.equal(txobj)
 })
 
 it('signTx() should be deterministic', function () {

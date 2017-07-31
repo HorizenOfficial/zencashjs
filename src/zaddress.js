@@ -10,10 +10,10 @@ var zconfig = require('./config')
  * @param {String} phrase (Password phrase)
  * @return {Sting} Z secret key (a_sk)
  */
-function mkZSecretKey(phrase: string): string {
+function mkZSecretKey (phrase: string): string {
   const a_sk: string = address.mkPrivKey(phrase)
   var baddr: Buffer = Buffer.from(a_sk, 'hex')
-  baddr[0] &= 0x0F
+  baddr[0] &= 0x0f
   return baddr.toString('hex')
 }
 
@@ -22,7 +22,7 @@ function mkZSecretKey(phrase: string): string {
  * @param {String} a_sk (secret key)
  * @return {Sting} sk (spending key)
  */
-function zSecretKeyToSpendingKey(a_sk: string): string {
+function zSecretKeyToSpendingKey (a_sk: string): string {
   const buf = Buffer.from(zconfig.zcSpendingKeyHash + a_sk, 'hex')
   return bs58check.encode(buf).toString('hex')
 }
@@ -32,7 +32,7 @@ function zSecretKeyToSpendingKey(a_sk: string): string {
  * @param {String} a_sk (secret key)
  * @return {Sting} a_pk key (paying key)
  */
-function zSecretKeyToPayingKey(a_sk: string): string{
+function zSecretKeyToPayingKey (a_sk: string): string {
   return prf.PRF_addr_a_pk(Buffer.from(a_sk, 'hex')).toString('hex')
 }
 
@@ -41,7 +41,7 @@ function zSecretKeyToPayingKey(a_sk: string): string{
  * @param {String} a_sk (secret key)
  * @return {Sting} pk_enc key (transmisison key)
  */
-function zSecretKeyToTransmissionKey(a_sk: string): string{
+function zSecretKeyToTransmissionKey (a_sk: string): string {
   var sk_enc = prf.PRF_addr_sk_enc(Buffer.from(a_sk, 'hex'))
 
   // Curve 25519 clamping
@@ -58,7 +58,7 @@ function zSecretKeyToTransmissionKey(a_sk: string): string{
  * @param {String} pk_enc key (transmission key)
  * @return {String} Zaddress
  */
-function mkZAddress(a_pk: string, pk_enc: string): string{  
+function mkZAddress (a_pk: string, pk_enc: string): string {
   const buf = Buffer.from(zconfig.zcPaymentAddressHash + a_pk + pk_enc, 'hex')
   return bs58check.encode(buf).toString('hex')
 }

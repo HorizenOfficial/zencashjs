@@ -9,7 +9,7 @@ module.exports = {
     private: '0488ade4'
   },
   pubKeyHash: '2089',
-  zcPaymentAddressHash: '169a',  // Private z-address
+  zcPaymentAddressHash: '169a', // Private z-address
   zcSpendingKeyHash: 'ab36', // Spending key
   scriptHash: '2096',
   wif: '80'

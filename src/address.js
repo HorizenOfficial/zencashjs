@@ -23,9 +23,8 @@ function mkPrivKey (phrase: string): string {
 function privKeyToWIF (privKey: string, toCompressed: boolean): string {
   toCompressed = toCompressed || false
 
-  if (toCompressed)
-    privKey = privKey + '01'  
-  
+  if (toCompressed) privKey = privKey + '01'
+
   return bs58check.encode(Buffer.from(zconfig.wif + privKey, 'hex'))
 }
 
@@ -53,7 +52,7 @@ function WIFToPrivKey (wifPk: string): string {
   og = og.substr(2, og.length) // remove WIF format ('80')
 
   // remove the '01' at the end to 'compress it' during WIF conversion
-  if (og.length > 64){
+  if (og.length > 64) {
     og = og.substr(0, 64)
   }
 
