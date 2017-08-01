@@ -4,74 +4,15 @@ var secp256k1 = require('secp256k1')
 var int64buffer = require('int64-buffer')
 var varuint = require('varuint-bitcoin')
 var zconfig = require('./config')
+var zbufferutils = require('./bufferutils')
 var zcrypto = require('./crypto')
+var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 var zbufferutils = require('./bufferutils')
 
-/* SIGHASH Codes
- * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/interpreter.h
- */
-const SIGHASH_ALL = 1
-const SIGHASH_NONE = 2
-const SIGHASH_SINGLE = 3
-const SIGHASH_ANYONECANPAY = 0x80
+import type {TXOBJ, HISTORY, RECIPIENTS} from './types'
 
-/*
- * Object types
- */
-// TXOBJ Structure
-declare type TXOBJ = {
-  locktime: number,
-  version: number,
-  ins: {
-    output: { hash: string, vout: number },
-    script: string,
-    sequence: string,
-    prevScriptPubKey: string,
-  }[],
-  outs: { script: string, satoshis: number }[],
-}
-
-// HISTORY Structure
-declare type HISTORY = {
-  txid: string,
-  vout: number,
-  scriptPubKey: string,
-}
-
-// RECIPIENTS Structure
-declare type RECIPIENTS = {
-  satoshis: number,
-  address: string,
-}
-
-// https://github.com/bitcoinjs/bitcoinjs-lib/issues/14
-function numToBytes (num: number, bytes: number) {
-  if (bytes == 0) return []
-  else return [num % 256].concat(numToBytes(Math.floor(num / 256), bytes - 1))
-}
-
-function numToVarInt (num: number): string {
-  var b
-  if (num < 253) b = [num]
-  else if (num < 65536) b = [253].concat(numToBytes(num, 2))
-  else if (num < 4294967296) b = [254].concat(numToBytes(num, 4))
-  else b = [253].concat(numToBytes(num, 8))
-  return Buffer.from(b).toString('hex')
-}
-
-/*
- * Given a hex string, get the length of it in bytes
- * ** NOT string.length, but convert it into bytes
- *    and return the length of that in bytes in hex
- * @param {String} hexStr
- * return {String} Length of hexStr in bytes
- */
-function getStringBufferLength (hexStr: string): string {
-  const _tmpBuf = Buffer.from(hexStr, 'hex').length
-  return Buffer.from([_tmpBuf]).toString('hex')
-}
 
 /* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
  * Given an address, generates a pubkeyhash type script needed for the transaction
@@ -87,7 +28,7 @@ function mkPubkeyHashScript (address: string): string {
   return (
     zopcodes.OP_DUP +
     zopcodes.OP_HASH160 +
-    getStringBufferLength(subAddrHex) +
+    zbufferutils.getStringBufferLength(subAddrHex) +
     subAddrHex +
     zopcodes.OP_EQUALVERIFY +
     zopcodes.OP_CHECKSIG
@@ -107,7 +48,7 @@ function mkScriptHashScript (address: string): string {
 
   return (
     zopcodes.OP_HASH160 +
-    getStringBufferLength(subAddrHex) +
+    zbufferutils.getStringBufferLength(subAddrHex) +
     subAddrHex +
     zopcodes.OP_EQUAL
   )
@@ -145,13 +86,13 @@ function mkPubkeyHashReplayScript (
   return (
     zopcodes.OP_DUP +
     zopcodes.OP_HASH160 +
-    getStringBufferLength(subAddrHex) +
+    zbufferutils.getStringBufferLength(subAddrHex) +
     subAddrHex +
     zopcodes.OP_EQUALVERIFY +
     zopcodes.OP_CHECKSIG +
-    getStringBufferLength(blockHashHex) +
+    zbufferutils.getStringBufferLength(blockHashHex) +
     blockHashHex +
-    getStringBufferLength(blockHeightHex) +
+    zbufferutils.getStringBufferLength(blockHeightHex) +
     blockHeightHex +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
@@ -185,12 +126,12 @@ function mkScriptHashReplayScript (
   // '14' is the length of the subAddrHex (in bytes)
   return (
     zopcodes.OP_HASH160 +
-    getStringBufferLength(subAddrHex) +
+    zbufferutils.getStringBufferLength(subAddrHex) +
     subAddrHex +
     zopcodes.OP_EQUAL +
-    getStringBufferLength(blockHashHex) +
+    zbufferutils.getStringBufferLength(blockHashHex) +
     blockHashHex +
-    getStringBufferLength(blockHeightHex) +
+    zbufferutils.getStringBufferLength(blockHeightHex) +
     blockHeightHex +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
@@ -248,15 +189,15 @@ function signatureForm (
   }
   newTx.ins[i].script = script
 
-  if (hashcode === SIGHASH_NONE) {
+  if (hashcode === zconstants.SIGHASH_NONE) {
     newTx.outs = []
-  } else if (hashcode === SIGHASH_SINGLE) {
+  } else if (hashcode === zconstants.SIGHASH_SINGLE) {
     newTx.outs = newTx.outs.slice(0, newTx.ins.length)
     for (var j = 0; j < newTx.ins.length - 1; ++j) {
       newTx.outs[j].satoshis = Math.pow(2, 64) - 1
       newTx.outs[j].script = ''
     }
-  } else if (hashcode === SIGHASH_ANYONECANPAY) {
+  } else if (hashcode === zconstants.SIGHASH_ANYONECANPAY) {
     newTx.ins = [newTx.ins[i]]
   }
 
@@ -273,7 +214,7 @@ function deserializeTx (hexStr: string): TXOBJ {
   var offset = 0
 
   // Out txobj
-  var txObj = { ins: [], outs: [] }
+  var txObj = {version: 0, locktime: 0, ins: [], outs: [] }
 
   // Version
   txObj.version = buf.readUInt32LE(offset)
@@ -300,8 +241,9 @@ function deserializeTx (hexStr: string): TXOBJ {
 
     txObj.ins.push({
       output: { hash: hash.reverse().toString('hex'), vout: vout },
-      script: script.toString('hex'),
-      sequence: sequence
+      script: script.toString('hex'),      
+      sequence: sequence,
+      prevScriptPubKey: '',
     })
   }
 
@@ -345,7 +287,7 @@ function serializeTx (txObj: TXOBJ): string {
   serializedTx += _buf16.toString('hex')
 
   // History
-  serializedTx += numToVarInt(txObj.ins.length)
+  serializedTx += zbufferutils.numToVarInt(txObj.ins.length)
   txObj.ins.map(function (i) {
     // Txids and vouts
     _buf16.writeUInt16LE(i.output.vout, 0)
@@ -353,7 +295,7 @@ function serializeTx (txObj: TXOBJ): string {
     serializedTx += _buf16.toString('hex')
 
     // Script
-    serializedTx += getStringBufferLength(i.script)
+    serializedTx += zbufferutils.getStringBufferLength(i.script)
     serializedTx += i.script
 
     // Sequence
@@ -361,7 +303,7 @@ function serializeTx (txObj: TXOBJ): string {
   })
 
   // Outputs
-  serializedTx += numToVarInt(txObj.outs.length)
+  serializedTx += zbufferutils.numToVarInt(txObj.outs.length)
   txObj.outs.map(function (o) {
     // Write 64bit buffers
     // JS only supports 56 bit
@@ -372,7 +314,7 @@ function serializeTx (txObj: TXOBJ): string {
     _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
 
     serializedTx += _buf32.toString('hex')
-    serializedTx += getStringBufferLength(o.script)
+    serializedTx += zbufferutils.getStringBufferLength(o.script)
     serializedTx += o.script
   })
 
@@ -433,7 +375,7 @@ function signTx (
   compressPubKey: ?boolean,
   hashcode: ?number
 ): TXOBJ {
-  hashcode = hashcode || SIGHASH_ALL
+  hashcode = hashcode || zconstants.SIGHASH_ALL
   compressPubKey = compressPubKey || false
 
   // Make a copy
@@ -471,9 +413,9 @@ function signTx (
   const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)
 
   txObj.ins[i].script =
-    getStringBufferLength(signatureDER) +
+    zbufferutils.getStringBufferLength(signatureDER) +
     signatureDER +
-    getStringBufferLength(pubKey) +
+    zbufferutils.getStringBufferLength(pubKey) +
     pubKey
 
   return txObj
@@ -481,13 +423,11 @@ function signTx (
 
 module.exports = {
   addressToScript: addressToScript,
-  createRawTx: createRawTx,
-  getStringBufferLength: getStringBufferLength,
+  createRawTx: createRawTx,  
   mkPubkeyHashReplayScript: mkPubkeyHashReplayScript,
   mkScriptHashReplayScript: mkScriptHashReplayScript,
   mkScriptHashScript: mkScriptHashScript,
-  mkPubkeyHashScript: mkPubkeyHashScript,
-  numToVarInt: numToVarInt,
+  mkPubkeyHashScript: mkPubkeyHashScript,  
   signatureForm: signatureForm,
   serializeTx: serializeTx,
   deserializeTx: deserializeTx,

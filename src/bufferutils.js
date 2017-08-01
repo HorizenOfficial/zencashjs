@@ -1,5 +1,20 @@
 // @flow
 
+// https://github.com/bitcoinjs/bitcoinjs-lib/issues/14
+function numToBytes (num: number, bytes: number) {
+  if (bytes == 0) return []
+  else return [num % 256].concat(numToBytes(Math.floor(num / 256), bytes - 1))
+}
+  
+function numToVarInt (num: number): string {
+  var b
+  if (num < 253) b = [num]
+  else if (num < 65536) b = [253].concat(numToBytes(num, 2))
+  else if (num < 4294967296) b = [254].concat(numToBytes(num, 4))
+  else b = [253].concat(numToBytes(num, 8))
+  return Buffer.from(b).toString('hex')
+}
+
 // https://github.com/feross/buffer/blob/master/index.js#L1127
 function verifuint (value: number, max: number) {
   if (typeof value !== 'number') {
@@ -32,7 +47,22 @@ function writeUInt64LE (buffer: Buffer, value: number, offset: number) {
   return offset + 8
 }
 
+/*
+ * Given a hex string, get the length of it in bytes
+ * ** NOT string.length, but convert it into bytes
+ *    and return the length of that in bytes in hex
+ * @param {String} hexStr
+ * return {String} Length of hexStr in bytes
+ */
+function getStringBufferLength (hexStr: string): string {
+  const _tmpBuf = Buffer.from(hexStr, 'hex').length
+  return Buffer.from([_tmpBuf]).toString('hex')
+}
+
 module.exports = {
   readUInt64LE: readUInt64LE,
-  writeUInt64LE: writeUInt64LE
+  writeUInt64LE: writeUInt64LE,
+  getStringBufferLength: getStringBufferLength,
+  numToVarInt: numToVarInt,
+  numToBytes: numToBytes
 }
