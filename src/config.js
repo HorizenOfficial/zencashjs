@@ -17,7 +17,7 @@ module.exports = {
   },
   
   testnet:{
-    testnetWif: 'ef',
-    testnetPubKeyHash: '2098'
+    Wif: 'ef',
+    keyHash: '2098'
   }
 }

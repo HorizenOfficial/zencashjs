@@ -994,7 +994,7 @@ kind-of@^4.0.0:
   dependencies:
     is-buffer "^1.1.5"
 
-libsodium-sumo@0.5.2:
+libsodium-sumo@0.5.2, libsodium-sumo@^0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/libsodium-sumo/-/libsodium-sumo-0.5.2.tgz#0772cec6445c655de46f5001d33ed09951d82868"
 
