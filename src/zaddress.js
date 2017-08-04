@@ -20,10 +20,13 @@ function mkZSecretKey (phrase: string): string {
 /*
  * Converts the secret key to a spending key
  * @param {String} a_sk (secret key)
+ * @param {String} zcSpendingKeyHash (secret key hash,optional)
  * @return {Sting} sk (spending key)
  */
-function zSecretKeyToSpendingKey (a_sk: string): string {
-  const buf = Buffer.from(zconfig.zcSpendingKeyHash + a_sk, 'hex')
+function zSecretKeyToSpendingKey (a_sk: string, zcSpendingKeyHash: ?string): string {
+  zcSpendingKeyHash = zcSpendingKeyHash || zconfig.mainnet.zcSpendingKeyHash
+
+  const buf = Buffer.from(zcSpendingKeyHash + a_sk, 'hex')
   return bs58check.encode(buf).toString('hex')
 }
 
@@ -56,10 +59,13 @@ function zSecretKeyToTransmissionKey (a_sk: string): string {
  * Makes a Z address given:
  * @param {String} a_pk (paying key)
  * @param {String} pk_enc key (transmission key)
+ * @param {String} zcPaymentAddressHash (hash for payment address, optional)
  * @return {String} Zaddress
  */
-function mkZAddress (a_pk: string, pk_enc: string): string {
-  const buf = Buffer.from(zconfig.zcPaymentAddressHash + a_pk + pk_enc, 'hex')
+function mkZAddress (a_pk: string, pk_enc: string, zcPaymentAddressHash: ?string): string {
+  zcPaymentAddressHash = zcPaymentAddressHash || zconfig.mainnet.zcPaymentAddressHash
+
+  const buf = Buffer.from(zcPaymentAddressHash + a_pk + pk_enc, 'hex')
   return bs58check.encode(buf).toString('hex')
 }
 

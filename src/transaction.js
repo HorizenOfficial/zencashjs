@@ -15,61 +15,26 @@ import type {TXOBJ, HISTORY, RECIPIENTS} from './types'
 
 
 /* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
- * Given an address, generates a pubkeyhash type script needed for the transaction
- * @param {String} address
- * return {String} pubKeyScript
- */
-function mkPubkeyHashScript (address: string): string {
-  var addrHex = bs58check.decode(address).toString('hex')
-
-  // Remove 'WIF' format
-  var subAddrHex = addrHex.substring(zconfig.pubKeyHash.length, addrHex.length)
-
-  return (
-    zopcodes.OP_DUP +
-    zopcodes.OP_HASH160 +
-    zbufferutils.getStringBufferLength(subAddrHex) +
-    subAddrHex +
-    zopcodes.OP_EQUALVERIFY +
-    zopcodes.OP_CHECKSIG
-  )
-}
-
-/* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
- * Given an address, generates a scripthash type script needed for the transaction
- * @param {String} address
- * return {String} pubKeyScript
- */
-function mkScriptHashScript (address: string): string {
-  var addrHex = bs58check.decode(address).toString('hex')
-
-  // Remove 'WIF' format
-  var subAddrHex = addrHex.substring(zconfig.pubKeyHash.length, addrHex.length)
-
-  return (
-    zopcodes.OP_HASH160 +
-    zbufferutils.getStringBufferLength(subAddrHex) +
-    subAddrHex +
-    zopcodes.OP_EQUAL
-  )
-}
-
-/* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
  * Given an address, generates a pubkeyhash replay type script needed for the transaction
  * @param {String} address
  * @param {Number} blockHeight
  * @param {Number} blockHash
+ * @param {String} pubKeyHash (optional)
  * return {String} pubKeyScript
  */
 function mkPubkeyHashReplayScript (
   address: string,
   blockHeight: number,
-  blockHash: string
+  blockHash: string,
+  pubKeyHash: ?string
 ): string {
+  // Get lengh of pubKeyHash (so we know where to substr later on)
+  pubKeyHash = pubKeyHash || zconfig.mainnet.pubKeyHash
+
   var addrHex = bs58check.decode(address).toString('hex')
 
-  // Cut out the first 4 bytes (pubKeyHash)
-  var subAddrHex = addrHex.substring(4, addrHex.length)
+  // Cut out pubKeyHash
+  var subAddrHex = addrHex.substring(pubKeyHash.length, addrHex.length)
 
   // Minimal encoding
   var blockHeightBuffer = Buffer.alloc(4)
@@ -102,7 +67,7 @@ function mkPubkeyHashReplayScript (
  * Given an address, generates a script hash replay type script needed for the transaction
  * @param {String} address
  * @param {Number} blockHeight
- * @param {Number} blockHash
+ * @param {Number} blockHash 
  * return {String} scriptHash script
  */
 function mkScriptHashReplayScript (
@@ -148,23 +113,15 @@ function addressToScript (
   address: string,
   blockHeight: number,
   blockHash: string
-): string {
-  // Hardfork at block 139200, is when replay takes action
-  if (blockHeight >= 139200) {
-    // P2SH replay starts with a 's', or 't'
-    if (address[1] === 's' || address[0] === 't') {
-      return mkScriptHashReplayScript(address, blockHeight, blockHash)
-    }
-
-    // P2PKH-replay is a replacement for P2PKH
-    // P2PKH-replay starts with a 0
-    return mkPubkeyHashReplayScript(address, blockHeight, blockHash)
-  } else {
-    if (address[1] === 's' || address[0] === 't') {
-      return mkScriptHashScript(address)
-    }
-    return mkPubkeyHashScript(address)
+): string {  
+  // P2SH replay starts with a 's', or 't'
+  if (address[1] === 's' || address[0] === 't') {
+    return mkScriptHashReplayScript(address, blockHeight, blockHash)
   }
+
+  // P2PKH-replay is a replacement for P2PKH
+  // P2PKH-replay starts with a 0
+  return mkPubkeyHashReplayScript(address, blockHeight, blockHash)
 }
 
 /*
@@ -425,9 +382,7 @@ module.exports = {
   addressToScript: addressToScript,
   createRawTx: createRawTx,  
   mkPubkeyHashReplayScript: mkPubkeyHashReplayScript,
-  mkScriptHashReplayScript: mkScriptHashReplayScript,
-  mkScriptHashScript: mkScriptHashScript,
-  mkPubkeyHashScript: mkPubkeyHashScript,  
+  mkScriptHashReplayScript: mkScriptHashReplayScript,  
   signatureForm: signatureForm,
   serializeTx: serializeTx,
   deserializeTx: deserializeTx,

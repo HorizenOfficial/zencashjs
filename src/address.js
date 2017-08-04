@@ -18,14 +18,16 @@ function mkPrivKey (phrase: string): string {
  * Converts a private key to WIF format
  * @param {String} privKey (private key)
  * @param {boolean} toCompressed (Convert to WIF compressed key or nah)
+ * @param {string} wif (wif hashing bytes (default: 0x80))
  * @return {Sting} WIF format (uncompressed)
  */
-function privKeyToWIF (privKey: string, toCompressed: boolean): string {
+function privKeyToWIF (privKey: string, toCompressed: boolean, wif: ?string): string {
   toCompressed = toCompressed || false
+  wif = wif || zconfig.mainnet.wif
 
   if (toCompressed) privKey = privKey + '01'
 
-  return bs58check.encode(Buffer.from(zconfig.wif + privKey, 'hex'))
+  return bs58check.encode(Buffer.from(wif + privKey, 'hex'))
 }
 
 /*
@@ -62,12 +64,15 @@ function WIFToPrivKey (wifPk: string): string {
 /*
  * Converts public key to zencash address
  * @param {String} pubKey (public key)
+ * @param {String} pubKeyHash (public key hash (optional, else use defaul))
  * @return {Sting} zencash address
  */
-function pubKeyToAddr (pubKey: string): string {
+function pubKeyToAddr (pubKey: string, pubKeyHash: ?string): string {
+  pubKeyHash = pubKeyHash || zconfig.mainnet.pubKeyHash
+
   const hash160 = zcrypto.hash160(Buffer.from(pubKey, 'hex'))
   return bs58check
-    .encode(Buffer.from(zconfig.pubKeyHash + hash160, 'hex'))
+    .encode(Buffer.from(pubKeyHash + hash160, 'hex'))
     .toString('hex')
 }
 
