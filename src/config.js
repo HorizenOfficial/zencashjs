@@ -12,12 +12,11 @@ module.exports = {
     pubKeyHash: '2089',
     scriptHash: '2096',
     zcPaymentAddressHash: '169a', // Private z-address
-    zcSpendingKeyHash: 'ab36', // Spending key  
+    zcSpendingKeyHash: 'ab36', // Spending key
     wif: '80',
   },
-  
   testnet:{
     wif: 'ef',
-    keyHash: '2098'
+    pubKeyHash: '2098'
   }
 }
