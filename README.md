@@ -1,22 +1,9 @@
 # zencashjs
-Dead simple and easy to use JavaScript based ZenCASH library. Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
-
-# Getting started (Dev)
-```bash
-git clone https://github.com/kendricktan/zencashjs.git
-cd zencashjs
-yarn install
-yarn watch-build
-
-# Dev flow
-flow status
-yarn build
-yarn test
-```
+Dead simple and easy to use JavaScript based library for zencash. Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
 
 # Example usage (Transparent address)
 ```javascript
-var zencash = require('zencashjs')
+var zencashjs = require('zencashjs')
 
 var priv = zencashjs.address.mkPrivKey('chris p. bacon, defender of the guardians')
 // 2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c
@@ -74,4 +61,21 @@ var pk_enc = zencashjs.zaddress.zSecretKeyToTransmissionKey(z_secretKey)
 
 var Zaddress = zencashjs.zaddress.mkZAddress(a_pk, pk_enc)
 // zcTPZR8Hqz2ZcStwMJju9L4VBHW7YWmNyL6tDAT4eVmzmxLaG7h4QmqUXfmrjz8twizH4piDGiRYJRZ1bhHhT5gFL6TKsQZ
+```
+
+
+# Development guide (more to come..)
+```bash
+# src is where the source code resides.
+# lib is where the transpiled code resides in.
+# edit src if you wanna make a PR
+git clone https://github.com/ZencashOfficial/zencashjs.git
+cd zencashjs
+yarn install
+yarn watch-build
+
+# Dev flow
+flow status
+yarn build
+yarn test
 ```
