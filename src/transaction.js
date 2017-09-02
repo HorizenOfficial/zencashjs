@@ -1,6 +1,7 @@
 // @flow
 var bs58check = require('bs58check')
-var secp256k1 = require('secp256k1')
+var elliptic = require('elliptic')
+var secp256k1 = new (elliptic.ec)('secp256k1')
 var int64buffer = require('int64-buffer')
 var varuint = require('varuint-bitcoin')
 var zconfig = require('./config')
@@ -356,14 +357,15 @@ function signTx (
   // Signing it
   const rawsig = secp256k1.sign(
     Buffer.from(msg, 'hex'),
-    Buffer.from(privKey, 'hex')
-  ).signature
+    Buffer.from(privKey, 'hex'),    
+    { canonical: true }
+  )
 
   // Convert it to DER format
   // Appending 01 to it cause
   // ScriptSig = <varint of total sig length> <SIG from code, including appended 01 SIGNHASH> <length of pubkey (0x21 or 0x41)> <pubkey>
   // https://bitcoin.stackexchange.com/a/36481
-  const signatureDER = secp256k1.signatureExport(rawsig).toString('hex') + '01'
+  const signatureDER = Buffer.from(rawsig.toDER()).toString('hex') + '01'
 
   // Chuck it back into txObj and add pubkey
   // WHAT? If it fails, uncompress/compress it and it should work...

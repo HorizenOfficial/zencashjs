@@ -12,6 +12,7 @@
     "bs58check": "^2.0.2",
     "create-hash": "^1.1.3",
     "create-hmac": "^1.1.6",
+    "elliptic": "^6.4.0",
     "int64-buffer": "^0.1.9",
     "libsodium-sumo": "^0.5.2",
     "libsodium-wrappers-sumo": "^0.5.2",
