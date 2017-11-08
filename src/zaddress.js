@@ -1,4 +1,5 @@
 // @flow
+/* eslint-disable camelcase */
 var prf = require('./prf')
 var address = require('./address')
 var bs58check = require('bs58check')

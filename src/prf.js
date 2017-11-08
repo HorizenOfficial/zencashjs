@@ -2,8 +2,6 @@
 var SHA256Compress = require('./sha256compress')
 
 function prf (a: number, b: number, c: number, d: number, x: Buffer, y: Buffer) {
-  
-
   var blob = Buffer.alloc(64)
 
   x.copy(blob, 0)
@@ -17,7 +15,7 @@ function prf (a: number, b: number, c: number, d: number, x: Buffer, y: Buffer) 
   return hasher.hash()
 }
 
-function prfAddr (aSk: Buffer, t: number) {  
+function prfAddr (aSk: Buffer, t: number) {
   var y = Buffer.alloc(32)
   y.fill(0)
   y[0] = t

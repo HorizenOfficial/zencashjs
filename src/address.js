@@ -1,7 +1,6 @@
 // @flow
 var bs58check = require('bs58check')
 var secp256k1 = require('secp256k1')
-var bigi = require('bigi')
 var zcrypto = require('./crypto')
 var zconfig = require('./config')
 

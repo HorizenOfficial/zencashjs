@@ -2,10 +2,10 @@
 
 // https://github.com/bitcoinjs/bitcoinjs-lib/issues/14
 function numToBytes (num: number, bytes: number) {
-  if (bytes == 0) return []
+  if (bytes === 0) return []
   else return [num % 256].concat(numToBytes(Math.floor(num / 256), bytes - 1))
 }
-  
+
 function numToVarInt (num: number): string {
   var b
   if (num < 253) b = [num]

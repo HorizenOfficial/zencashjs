@@ -13,9 +13,9 @@ module.exports = {
     scriptHash: '2096',
     zcPaymentAddressHash: '169a', // Private z-address
     zcSpendingKeyHash: 'ab36', // Spending key
-    wif: '80',
+    wif: '80'
   },
-  testnet:{
+  testnet: {
     wif: 'ef',
     pubKeyHash: '2098'
   }

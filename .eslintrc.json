@@ -1,0 +1,24 @@
+{  
+  "parser": "babel-eslint",
+  "extends": [
+      "standard",
+      "plugin:flowtype/recommended"      
+  ],
+  "plugins": [
+      "flowtype"
+  ],
+  "globals": {
+      "document": true,
+      "foo": true,
+      "window": true,
+      "alert": true,
+      "device": true,
+      "cordovaHTTP": true,
+      "cordova": true,
+      "QRScanner": true,
+      "VERSION": true,
+      "FileReader": true,
+      "FileError": true,
+      "Blob": true
+  }
+}

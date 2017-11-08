@@ -72,10 +72,5 @@ var Zaddress = zencashjs.zaddress.mkZAddress(a_pk, pk_enc)
 git clone https://github.com/ZencashOfficial/zencashjs.git
 cd zencashjs
 yarn install
-yarn watch-build
-
-# Dev flow
-flow status
-yarn build
-yarn test
+yarn run [dev | build]
 ```

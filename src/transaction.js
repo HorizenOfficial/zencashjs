@@ -1,8 +1,9 @@
 // @flow
+import type {TXOBJ, HISTORY, RECIPIENTS} from './types'
+
 var bs58check = require('bs58check')
 var elliptic = require('elliptic')
-var secp256k1 = new (elliptic.ec)('secp256k1')
-var int64buffer = require('int64-buffer')
+var secp256k1 = new (elliptic.ec)('secp256k1') /* eslint new-cap: ["error", { "newIsCap": false }] */
 var varuint = require('varuint-bitcoin')
 var zconfig = require('./config')
 var zbufferutils = require('./bufferutils')
@@ -10,10 +11,6 @@ var zcrypto = require('./crypto')
 var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
-var zbufferutils = require('./bufferutils')
-
-import type {TXOBJ, HISTORY, RECIPIENTS} from './types'
-
 
 /* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
  * Given an address, generates a pubkeyhash replay type script needed for the transaction
@@ -68,7 +65,7 @@ function mkPubkeyHashReplayScript (
  * Given an address, generates a script hash replay type script needed for the transaction
  * @param {String} address
  * @param {Number} blockHeight
- * @param {Number} blockHash 
+ * @param {Number} blockHash
  * return {String} scriptHash script
  */
 function mkScriptHashReplayScript (
@@ -114,7 +111,7 @@ function addressToScript (
   address: string,
   blockHeight: number,
   blockHash: string
-): string {  
+): string {
   // P2SH replay starts with a 's', or 't'
   if (address[1] === 's' || address[0] === 't') {
     return mkScriptHashReplayScript(address, blockHeight, blockHash)
@@ -142,7 +139,7 @@ function signatureForm (
   // Copy object so we don't rewrite it
   var newTx = JSON.parse(JSON.stringify(txObj))
 
-  for (var j = 0; j < newTx.ins.length; j++) {
+  for (let j = 0; j < newTx.ins.length; j++) {
     newTx.ins[j].script = ''
   }
   newTx.ins[i].script = script
@@ -151,7 +148,7 @@ function signatureForm (
     newTx.outs = []
   } else if (hashcode === zconstants.SIGHASH_SINGLE) {
     newTx.outs = newTx.outs.slice(0, newTx.ins.length)
-    for (var j = 0; j < newTx.ins.length - 1; ++j) {
+    for (let j = 0; j < newTx.ins.length - 1; ++j) {
       newTx.outs[j].satoshis = Math.pow(2, 64) - 1
       newTx.outs[j].script = ''
     }
@@ -172,7 +169,7 @@ function deserializeTx (hexStr: string): TXOBJ {
   var offset = 0
 
   // Out txobj
-  var txObj = {version: 0, locktime: 0, ins: [], outs: [] }
+  var txObj = {version: 0, locktime: 0, ins: [], outs: []}
 
   // Version
   txObj.version = buf.readUInt32LE(offset)
@@ -181,7 +178,7 @@ function deserializeTx (hexStr: string): TXOBJ {
   // Vins
   var vinLen = varuint.decode(buf, offset)
   offset += varuint.decode.bytes
-  for (var i = 0; i < vinLen; i++) {
+  for (let i = 0; i < vinLen; i++) {
     const hash = buf.slice(offset, offset + 32)
     offset += 32
 
@@ -199,16 +196,16 @@ function deserializeTx (hexStr: string): TXOBJ {
 
     txObj.ins.push({
       output: { hash: hash.reverse().toString('hex'), vout: vout },
-      script: script.toString('hex'),      
+      script: script.toString('hex'),
       sequence: sequence,
-      prevScriptPubKey: '',
+      prevScriptPubKey: ''
     })
   }
 
   // Vouts
   var voutLen = varuint.decode(buf, offset)
   offset += varuint.decode.bytes
-  for (var i = 0; i < voutLen; i++) {
+  for (let i = 0; i < voutLen; i++) {
     const satoshis = zbufferutils.readUInt64LE(buf, offset)
     offset += 8
 
@@ -357,7 +354,7 @@ function signTx (
   // Signing it
   const rawsig = secp256k1.sign(
     Buffer.from(msg, 'hex'),
-    Buffer.from(privKey, 'hex'),    
+    Buffer.from(privKey, 'hex'),
     { canonical: true }
   )
 
@@ -368,7 +365,6 @@ function signTx (
   const signatureDER = Buffer.from(rawsig.toDER()).toString('hex') + '01'
 
   // Chuck it back into txObj and add pubkey
-  // WHAT? If it fails, uncompress/compress it and it should work...
   const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)
 
   txObj.ins[i].script =
@@ -382,9 +378,9 @@ function signTx (
 
 module.exports = {
   addressToScript: addressToScript,
-  createRawTx: createRawTx,  
+  createRawTx: createRawTx,
   mkPubkeyHashReplayScript: mkPubkeyHashReplayScript,
-  mkScriptHashReplayScript: mkScriptHashReplayScript,  
+  mkScriptHashReplayScript: mkScriptHashReplayScript,
   signatureForm: signatureForm,
   serializeTx: serializeTx,
   deserializeTx: deserializeTx,
