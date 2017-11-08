@@ -55,6 +55,7 @@ function writeUInt64LE (buffer: Buffer, value: number, offset: number) {
  * return {String} Length of hexStr in bytes
  */
 function getStringBufferLength (hexStr: string): string {
+  // This is the 'ToByteVector' in bitcoin source code
   const _tmpBuf = Buffer.from(hexStr, 'hex').length
   return Buffer.from([_tmpBuf]).toString('hex')
 }

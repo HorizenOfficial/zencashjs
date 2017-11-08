@@ -17,6 +17,7 @@ module.exports = {
   },
   testnet: {
     wif: 'ef',
-    pubKeyHash: '2098'
+    pubKeyHash: '2098',
+    scriptHash: '2092'
   }
 }
