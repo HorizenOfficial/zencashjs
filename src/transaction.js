@@ -112,13 +112,12 @@ function addressToScript (
   blockHeight: number,
   blockHash: string
 ): string {
-  // P2SH replay starts with a 's', or 't'
-  if (address[1] === 's' || address[0] === 't') {
+  // P2SH replay starts with a 's', or 'r'
+  if (address[1] === 's' || address[1] === 'r') {
     return mkScriptHashReplayScript(address, blockHeight, blockHash)
   }
 
   // P2PKH-replay is a replacement for P2PKH
-  // P2PKH-replay starts with a 0
   return mkPubkeyHashReplayScript(address, blockHeight, blockHash)
 }
 

@@ -88,7 +88,7 @@ function mkMultiSigRedeemScript (pubKeys: [string], M: number, N: number): strin
 }
 
 /*
- * Given the mutli sig redeem script, return the corresponding address
+ * Given the multi sig redeem script, return the corresponding address
  * @param {String} RedeemScript (redeem script)
  * @return {String} Address
  */
