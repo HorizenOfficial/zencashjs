@@ -50,7 +50,7 @@ var privKeysWIF = ['L2sjwCsdZQmckKkTKGDqhKcWtbe3EU2FL4N1YHpD2SC1GhHRhqxF', 'L5bp
 
 // Converts Private keys in WIF to its original form
 var privKeys = privKeysWIF.map((x) => zencashjs.address.WIFToPrivKey(x))
-// [ '03519842d08ea56a635bfa8dd617b8e33f0426530d8e201107dd9a6af9493bd487', '02d3ac8c0cb7b99a26cd66269a312afe4e0a621579dfe8b33e29c597a32a616544', '02696187262f522cf1fa2c30c5cd6853c4a6c51ad5ba418abb4e3898dbc5a93d2e' ]
+// [ 'a8c04b7209d16606532bbbd158420bd7dcde415db5ff3ec269f9c3cb327661d6', 'fa137ed90f4876b7154884caf2d889de9ea9a838e1c938380c2de25d4de613f7', '32ae14a84a5f4e0ec804daef223cc7f48412abde76f78a2d2df463bb065d6617' ]
 
 // Get public keys (NOT address)
 var pubKeys = privKeys.map((x) => zencashjs.address.privKeyToPubKey(x, true))
