@@ -24,11 +24,9 @@ function mkPubkeyHashReplayScript (
   address: string,
   blockHeight: number,
   blockHash: string,
-  pubKeyHash: ?string
+  pubKeyHash: string = zconfig.mainnet.pubKeyHash
 ): string {
   // Get lengh of pubKeyHash (so we know where to substr later on)
-  pubKeyHash = pubKeyHash || zconfig.mainnet.pubKeyHash
-
   var addrHex = bs58check.decode(address).toString('hex')
 
   // Cut out pubKeyHash
@@ -86,7 +84,6 @@ function mkScriptHashReplayScript (
   // Need to reverse it
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
-  // '14' is the length of the subAddrHex (in bytes)
   return (
     zopcodes.OP_HASH160 +
     zbufferutils.getStringBufferLength(subAddrHex) +
@@ -138,6 +135,7 @@ function signatureForm (
   // Copy object so we don't rewrite it
   var newTx = JSON.parse(JSON.stringify(txObj))
 
+  // Only sign the specified index
   for (let j = 0; j < newTx.ins.length; j++) {
     newTx.ins[j].script = ''
   }
@@ -178,6 +176,7 @@ function deserializeTx (hexStr: string): TXOBJ {
   var vinLen = varuint.decode(buf, offset)
   offset += varuint.decode.bytes
   for (let i = 0; i < vinLen; i++) {
+    // Else its
     const hash = buf.slice(offset, offset + 32)
     offset += 32
 
@@ -242,13 +241,14 @@ function serializeTx (txObj: TXOBJ): string {
 
   // History
   serializedTx += zbufferutils.numToVarInt(txObj.ins.length)
-  txObj.ins.map(function (i) {
+  txObj.ins.map((i) => {
     // Txids and vouts
     _buf16.writeUInt16LE(i.output.vout, 0)
     serializedTx += Buffer.from(i.output.hash, 'hex').reverse().toString('hex')
     serializedTx += _buf16.toString('hex')
 
-    // Script
+    // Script Signature
+    // Doesn't work for length > 253 ....
     serializedTx += zbufferutils.getStringBufferLength(i.script)
     serializedTx += i.script
 
@@ -258,15 +258,17 @@ function serializeTx (txObj: TXOBJ): string {
 
   // Outputs
   serializedTx += zbufferutils.numToVarInt(txObj.outs.length)
-  txObj.outs.map(function (o) {
+  txObj.outs.map((o) => {
     // Write 64bit buffers
     // JS only supports 56 bit
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/bufferutils.js#L25
     var _buf32 = Buffer.alloc(8)
 
+    // Satohis
     _buf32.writeInt32LE(o.satoshis & -1, 0)
     _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
 
+    // ScriptPubKey
     serializedTx += _buf32.toString('hex')
     serializedTx += zbufferutils.getStringBufferLength(o.script)
     serializedTx += o.script
@@ -314,36 +316,20 @@ function createRawTx (
 }
 
 /*
- * Signs the raw transaction
- * @param {String} rawTx raw transaction
- * @param {Int} i
- * @param {privKey} privKey (not WIF format)
- * @param {compressPubKey} compress public key before appending to scriptSig? (default false)
- * @param {hashcode} hashcode (default SIGHASH_ALL)
- * return {String} signed transaction
- */
-function signTx (
-  _txObj: TXOBJ,
-  i: number,
+ * Gets signature for the vin script
+ * @params {string} privKey private key
+ * @params {TXOBJ} signingTx a txobj whereby all the vin script's field are empty except for the one that needs to be signed
+ * @params {number} hashcode
+*/
+function getScriptSignature (
   privKey: string,
-  compressPubKey: ?boolean,
-  hashcode: ?number
-): TXOBJ {
-  hashcode = hashcode || zconstants.SIGHASH_ALL
-  compressPubKey = compressPubKey || false
-
-  // Make a copy
-  var txObj = JSON.parse(JSON.stringify(_txObj))
-
+  signingTx: TXOBJ,
+  hashcode: number
+): string {
   // Buffer
   var _buf16 = Buffer.alloc(4)
   _buf16.writeUInt16LE(hashcode, 0)
 
-  // Prepare signing
-  const script = txObj.ins[i].prevScriptPubKey
-
-  // Prepare our signature
-  const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
   const signingTxHex: string = serializeTx(signingTx)
   const signingTxWithHashcode = signingTxHex + _buf16.toString('hex')
 
@@ -363,14 +349,96 @@ function signTx (
   // https://bitcoin.stackexchange.com/a/36481
   const signatureDER = Buffer.from(rawsig.toDER()).toString('hex') + '01'
 
+  return signatureDER
+}
+
+/*
+ * Signs the raw transaction
+ * @param {String} rawTx raw transaction
+ * @param {Int} i
+ * @param {privKey} privKey (not WIF format)
+ * @param {compressPubKey} compress public key before appending to scriptSig? (default false)
+ * @param {hashcode} hashcode (default SIGHASH_ALL)
+ * return {String} signed transaction
+ */
+function signTx (
+  _txObj: TXOBJ,
+  i: number,
+  privKey: string,
+  compressPubKey: boolean = false,
+  hashcode: number = zconstants.SIGHASH_ALL
+): TXOBJ {
+  // Make a copy
+  var txObj = JSON.parse(JSON.stringify(_txObj))
+
+  // Prepare our signature
+  // Get script from the current tx input
+  const script = txObj.ins[i].prevScriptPubKey
+
+  // Populate current tx in with the prevScriptPubKey
+  const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
+
+  // Get script signature
+  const scriptSig = getScriptSignature(privKey, signingTx, hashcode)
+
   // Chuck it back into txObj and add pubkey
+  // Protocol:
+  // PUSHDATA
+  // signature data and SIGHASH_ALL
+  // PUSHDATA
+  // public key data
   const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)
 
   txObj.ins[i].script =
-    zbufferutils.getStringBufferLength(signatureDER) +
-    signatureDER +
+    zbufferutils.getStringBufferLength(scriptSig) +
+    scriptSig +
     zbufferutils.getStringBufferLength(pubKey) +
     pubKey
+
+  return txObj
+}
+
+/*
+ * Multi signs the raw transaction
+ * @param {String} rawTx raw transaction
+ * @param {Int} index fof tx.in to sign
+ * @param {privKey} [list of your private keys associated with the multisig] (not WIF format) 
+ * @param {hashcode} hashcode (default SIGHASH_ALL)
+ * return {String} signed transaction
+ */
+function multiSignTx (
+  _txObj: TXOBJ,
+  i: number,
+  privKeys: [string],
+  redeemScript: string,
+  hashcode: number = zconstants.SIGHASH_ALL
+): TXOBJ {
+  // Make a copy
+  var txObj = JSON.parse(JSON.stringify(_txObj))
+
+  // Prepare our signature
+  // Get script from the current tx input
+  const script = txObj.ins[i].prevScriptPubKey
+
+  // Populate current tx in with the prevScriptPubKey
+  const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
+
+  // http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
+  // Look up the table @ raw spending transaction
+  const signatures: string = privKeys.map((x) => {
+    // sig is the signature
+    // 'push 71 bytes' is the size of the signature
+    const sig = getScriptSignature(x, signingTx, hashcode)
+    const sigSize = zbufferutils.getStringBufferLength(sig)
+    return sigSize + sig
+  }).join('')
+
+  txObj.ins[i].script =
+    zopcodes.OP_0 +
+    signatures +
+    zopcodes.OP_PUSHDATA1 +
+    zbufferutils.getStringBufferLength(redeemScript) +
+    redeemScript
 
   return txObj
 }
@@ -383,5 +451,7 @@ module.exports = {
   signatureForm: signatureForm,
   serializeTx: serializeTx,
   deserializeTx: deserializeTx,
-  signTx: signTx
+  signTx: signTx,
+  multiSignTx: multiSignTx,
+  getScriptSignature: getScriptSignature
 }

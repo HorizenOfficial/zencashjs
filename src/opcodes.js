@@ -4,6 +4,7 @@
  */
 
 module.exports = {
+  OP_0: '00',
   OP_1: '51',
   OP_2: '52',
   OP_3: '53',
@@ -15,5 +16,6 @@ module.exports = {
   OP_CHECKBLOCKATHEIGHT: 'b4',
   OP_EQUAL: '87',
   OP_REVERSED: '89',
-  OP_CHECKMULTISIG: 'ae'
+  OP_CHECKMULTISIG: 'ae',
+  OP_PUSHDATA1: '4c'
 }

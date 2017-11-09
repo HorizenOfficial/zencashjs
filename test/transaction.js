@@ -20,18 +20,18 @@ it('serializeTx() and desrializeTx() should be deterministic', function () {
   var txobj_deserialized = zencashjs.transaction.deserializeTx(txobj_serialized)
 
   // Remove prevScriptPubKey since its not really an attribute
-  for (var i = 0; i < txobj.ins.length; i++){
+  for (var i = 0; i < txobj.ins.length; i++) {
     txobj.ins[i].prevScriptPubKey = ''
   }
 
-  expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')  
+  expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
   expect(txobj_deserialized).to.deep.equal(txobj)
 })
 
 it('signTx() should be deterministic', function () {
   // Create raw transaction at current height
   const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
-  const blockHeight = 142091  
+  const blockHeight = 142091
 
   var txobj = zencashjs.transaction.createRawTx(
     [{
@@ -45,7 +45,7 @@ it('signTx() should be deterministic', function () {
   )
 
   const compressPubKey = true
-  const SIGHASH_ALL = 1  
+  const SIGHASH_ALL = 1
   var signedobj = zencashjs.transaction.signTx(txobj, 0, '2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c', compressPubKey, SIGHASH_ALL)
   var signed_serialized = zencashjs.transaction.serializeTx(signedobj)
 
