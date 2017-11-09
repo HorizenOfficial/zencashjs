@@ -86,7 +86,7 @@ var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys[0], redeemScript)
 // 3045022100c65ec438dc13028b1328a0f8426e1970ef202cba168772fe9d91d141e3020413022021b038c2098c29014aa7feef1624c3d9e4035ca960791f3bbe256df9f008038d01
 
 var sig2 = zencashjs.transaction.multiSign(txobj, 0, privKeys[1], redeemScript)
-// 3045022100c65ec438dc13028b1328a0f8426e1970ef202cba168772fe9d91d141e3020413022021b038c2098c29014aa7feef1624c3d9e4035ca960791f3bbe256df9f008038d01
+// 3045022100db1f423fe11bf06c9c97692e8086f5743653cad289e3a1c085ae656847ffb9d10220063c103d8c7c54597b055106ab70a45a2254c63435b64375a966c002f85d141901
 
 // NOTE: If you wanna send the tx to someone to get their signature, you can serialize the txObj and send it over in bytes, they can also deserialize it: e.g.
 // var txBytes = zencashjs.transaction.serializeTx(txobj)
