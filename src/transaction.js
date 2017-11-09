@@ -409,41 +409,58 @@ function signTx (
 }
 
 /*
- * Multi signs the raw transaction
- * @param {String} rawTx raw transaction
+ * Gets signatures needed for multi-sign tx
+ * @param {String} _txObj transaction object you wanna sign
  * @param {Int} index fof tx.in to sign
- * @param {privKey} [list of your private keys associated with the multisig] (not WIF format)
- * @param {hashcode} hashcode (default SIGHASH_ALL)
- * return {String} signed transaction
+ * @param {privKey} One of the M private keys you (NOT WIF format!!!)
+ * @param {string} redeemScript (redeemScript of the multi-sig)
+ * @param {string} hashcode (SIGHASH_ALL, SIGHASH_NONE, etc)
+ * return {String} signature
  */
-function multiSignTx (
+function multiSign (
   _txObj: TXOBJ,
   i: number,
-  privKeys: [string],
+  privKey: string,
   redeemScript: string,
   hashcode: number = zconstants.SIGHASH_ALL
+): string {
+  // Make a copy
+  var txObj = JSON.parse(JSON.stringify(_txObj))
+
+  // Populate current tx.ins[i] with the redeemScript
+  const signingTx: TXOBJ = signatureForm(txObj, i, redeemScript, hashcode)
+
+  return getScriptSignature(privKey, signingTx, hashcode)
+}
+
+/*
+ * Applies the signatures to the transaction object
+ * NOTE: You NEED to supply the signatures in order.
+ *       E.g. You made sigAddr1 with priv1, priv3, priv2
+ *            You can provide signatures of (priv1, priv2) (priv3, priv2) ...
+ *            But not (priv2, priv1)
+ * @param {String} _txObj transaction object you wanna sign
+ * @param {Int} index fof tx.in to sign
+ * @param {[string]} signatures obtained from multiSign
+ * @param {string} redeemScript (redeemScript of the multi-sig)
+ * @param {string} hashcode (SIGHASH_ALL, SIGHASH_NONE, etc)
+ * return {String} signature
+ */
+function applyMultiSignatures (
+  _txObj: TXOBJ,
+  i: number,
+  signatures: [string],
+  redeemScript: string
 ): TXOBJ {
   // Make a copy
   var txObj = JSON.parse(JSON.stringify(_txObj))
 
-  // Prepare our signature
-  // Get script from the current tx input
-  const script = txObj.ins[i].prevScriptPubKey
-
-  // Populate current tx in with the prevScriptPubKey
-  const signingTx: TXOBJ = signatureForm(txObj, i, script, hashcode)
-
   // http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
-  // Look up the table @ raw spending transaction
-  const signatures: string = privKeys.map((x) => {
-    const sig = getScriptSignature(x, signingTx, hashcode)
-    const sigSize = zbufferutils.getPushDataLength(sig)
-    return sigSize + sig
-  }).join('')
-
   txObj.ins[i].script =
     zopcodes.OP_0 +
-    signatures +
+    signatures.map((x) => {
+      return zbufferutils.getPushDataLength(x) + x
+    }).join('') +
     zopcodes.OP_PUSHDATA1 +
     zbufferutils.getPushDataLength(redeemScript) +
     redeemScript
@@ -460,6 +477,7 @@ module.exports = {
   serializeTx: serializeTx,
   deserializeTx: deserializeTx,
   signTx: signTx,
-  multiSignTx: multiSignTx,
+  multiSign: multiSign,
+  applyMultiSignatures: applyMultiSignatures,
   getScriptSignature: getScriptSignature
 }

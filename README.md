@@ -40,6 +40,67 @@ var tx0 = zencashjs.transaction.signTx(txobj, 0, '2c3a48576fe6e8a466e78cd2957c9d
 // You can now do zen-cli sendrawtransaction `SERIALIZED_TRANSACTION`
 ```
 
+# Example Usage (Multi-sig)
+```javascript
+var zencashjs = require('zencashjs')
+
+// Private keys in wallet import format
+var privKeysWIF = ['L2sjwCsdZQmckKkTKGDqhKcWtbe3EU2FL4N1YHpD2SC1GhHRhqxF', 'L5bpskJWAGGWR1GA9SJkCQ2ndHkezqm8GuoWaBesrrwnsa1roSN6',
+'KxvE58rxEwckkCjemDVdMDp7wzgosnyX1oyjzWmrcAVpV7EaZdSP']
+
+// Converts Private keys in WIF to its original form
+var privKeys = privKeysWIF.map((x) => zencashjs.address.WIFToPrivKey(x))
+// [ '03519842d08ea56a635bfa8dd617b8e33f0426530d8e201107dd9a6af9493bd487', '02d3ac8c0cb7b99a26cd66269a312afe4e0a621579dfe8b33e29c597a32a616544', '02696187262f522cf1fa2c30c5cd6853c4a6c51ad5ba418abb4e3898dbc5a93d2e' ]
+
+// Get public keys (NOT address)
+var pubKeys = privKeys.map((x) => zencashjs.address.privKeyToPubKey(x, true))
+// [ '03519842d08ea56a635bfa8dd617b8e33f0426530d8e201107dd9a6af9493bd487', '02d3ac8c0cb7b99a26cd66269a312afe4e0a621579dfe8b33e29c597a32a616544', '02696187262f522cf1fa2c30c5cd6853c4a6c51ad5ba418abb4e3898dbc5a93d2e' ]
+
+// Make a 2-of-3 multisig address
+// NOTE: The redeemScript determines the order of your signatures for multisign
+//       E.g. I made an address with pk1, pk3, pk2 for a 2-of-3 multisig
+//            Valid Sigs: [pk1, pk2] OR [pk3, pk2] OR [pk1, pk3] ...
+//            Invalid Sigs: [pk3, pk1], [pk2, pk1]
+var redeemScript = zencashjs.address.mkMultiSigRedeemScript(pubKeys, 2, 3)
+// 522103519842d08ea56a635bfa8dd617b8e33f0426530d8e201107dd9a6af9493bd4872102d3ac8c0cb7b99a26cd66269a312afe4e0a621579dfe8b33e29c597a32a6165442102696187262f522cf1fa2c30c5cd6853c4a6c51ad5ba418abb4e3898dbc5a93d2e53ae
+
+var multiSigAddress = zencashjs.address.multiSigRSToAddress(redeemScript)
+// zsmSCni8GXoCdTGqUfn26QJVGh6rpaFs17T
+
+// To create and sign a raw transaction at BLOCKHEIGHT and BLOCKHASH
+const blockHeight = 142091
+const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
+
+var txobj = zencashjs.transaction.createRawTx(
+  [{
+      txid: 'f5f324064de9caab9353674c59f1c3987ca997bf5882a41a722686883e089581', vout: 0,
+      scriptPubKey: '' // DOn't need script pub key since we'll be using redeemScript to sign
+  }],
+  [{address: 'zneng6nRqTrqTKfjYAqXT86HWtk96ftPjtX', satoshis: 10000}],
+  blockHeight,
+  blockHash
+)
+
+// Prepare our signatures for mutli-sig
+var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys[0], redeemScript)
+// 3045022100c65ec438dc13028b1328a0f8426e1970ef202cba168772fe9d91d141e3020413022021b038c2098c29014aa7feef1624c3d9e4035ca960791f3bbe256df9f008038d01
+
+var sig2 = zencashjs.transaction.multiSign(txobj, 0, privKeys[1], redeemScript)
+// 3045022100c65ec438dc13028b1328a0f8426e1970ef202cba168772fe9d91d141e3020413022021b038c2098c29014aa7feef1624c3d9e4035ca960791f3bbe256df9f008038d01
+
+// NOTE: If you wanna send the tx to someone to get their signature, you can serialize the txObj and send it over in bytes, they can also deserialize it: e.g.
+// var txBytes = zencashjs.transaction.serializeTx(txobj)
+// var txObj = zencashjs.transaction.deserializeTx(txBytes)
+
+// Apply the signatures to the transaction object
+var tx0 = zencashjs.transaction.applyMultiSignatures(txobj, 0, [sig1, sig2], redeemScript)
+
+// Serialize the transaction
+var serializedTx = zencashjs.transaction.serializeTx(tx0)
+
+// You can now send the serializedTx using the RPC command sendrawtransaction or through an API like insight
+```
+
 # Example usage (Private address)
 ```javascript
 var zencashjs = require('zencashjs')
