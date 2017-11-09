@@ -54,15 +54,16 @@ function writeUInt64LE (buffer: Buffer, value: number, offset: number) {
  * @param {String} hexStr
  * return {String} Length of hexStr in bytes
  */
-function getStringBufferLength (hexStr: string): string {
+function getPushDataLength (hexStr: string): string {
   // This is the 'ToByteVector' in bitcoin source code
   let b: string
   const _tmpBuf = Buffer.from(hexStr, 'hex').length
   if (hexStr.length < 253) {
     b = Buffer.from([_tmpBuf]).toString('hex')
   } else {
+    // Little Endian
     // Bunch of magic numbers i reversed engineered from the zen protocol...
-    b = Buffer.from([253, _tmpBuf, Math.floor(hexStr.length / 352)]).toString('hex')
+    b = Buffer.from([253, _tmpBuf, Math.floor(_tmpBuf / 256)]).toString('hex')
   }
   return b
 }
@@ -70,7 +71,7 @@ function getStringBufferLength (hexStr: string): string {
 module.exports = {
   readUInt64LE: readUInt64LE,
   writeUInt64LE: writeUInt64LE,
-  getStringBufferLength: getStringBufferLength,
+  getPushDataLength: getPushDataLength,
   numToVarInt: numToVarInt,
   numToBytes: numToBytes
 }

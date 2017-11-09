@@ -10,6 +10,8 @@ module.exports = {
   OP_3: '53',
   OP_4: '54',
   OP_DUP: '76',
+  OP_NIP: '77',
+  OP_OVER: '78',
   OP_HASH160: 'a9',
   OP_EQUALVERIFY: '88',
   OP_CHECKSIG: 'ac',

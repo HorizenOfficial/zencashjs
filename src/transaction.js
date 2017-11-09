@@ -47,13 +47,13 @@ function mkPubkeyHashReplayScript (
   return (
     zopcodes.OP_DUP +
     zopcodes.OP_HASH160 +
-    zbufferutils.getStringBufferLength(subAddrHex) +
+    zbufferutils.getPushDataLength(subAddrHex) +
     subAddrHex +
     zopcodes.OP_EQUALVERIFY +
     zopcodes.OP_CHECKSIG +
-    zbufferutils.getStringBufferLength(blockHashHex) +
+    zbufferutils.getPushDataLength(blockHashHex) +
     blockHashHex +
-    zbufferutils.getStringBufferLength(blockHeightHex) +
+    zbufferutils.getPushDataLength(blockHeightHex) +
     blockHeightHex +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
@@ -86,12 +86,12 @@ function mkScriptHashReplayScript (
 
   return (
     zopcodes.OP_HASH160 +
-    zbufferutils.getStringBufferLength(subAddrHex) +
+    zbufferutils.getPushDataLength(subAddrHex) +
     subAddrHex +
     zopcodes.OP_EQUAL +
-    zbufferutils.getStringBufferLength(blockHashHex) +
+    zbufferutils.getPushDataLength(blockHashHex) +
     blockHashHex +
-    zbufferutils.getStringBufferLength(blockHeightHex) +
+    zbufferutils.getPushDataLength(blockHeightHex) +
     blockHeightHex +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
@@ -139,7 +139,17 @@ function signatureForm (
   for (let j = 0; j < newTx.ins.length; j++) {
     newTx.ins[j].script = ''
   }
-  newTx.ins[i].script = script
+
+  // https://github.com/vbuterin/pybitcointools/blob/6db88d846d3dd0414f9064febd98d2553e14f953/bitcoin/transaction.py#L310
+  if (newTx.ins[i].script.length < 75) {
+    newTx.ins[i].script = script
+  } else if (newTx.ins[i].script.length < 256) {
+    newTx.ins[i].script = zopcodes.OP_DUP + script
+  } else if (newTx.ins[i].script.length < 65536) {
+    newTx.ins[i].script = zopcodes.OP_NIP + script
+  } else {
+    newTx.ins[i].script = zopcodes.OP_OVER + script
+  }
 
   if (hashcode === zconstants.SIGHASH_NONE) {
     newTx.outs = []
@@ -249,7 +259,7 @@ function serializeTx (txObj: TXOBJ): string {
 
     // Script Signature
     // Doesn't work for length > 253 ....
-    serializedTx += zbufferutils.getStringBufferLength(i.script)
+    serializedTx += zbufferutils.getPushDataLength(i.script)
     serializedTx += i.script
 
     // Sequence
@@ -270,7 +280,7 @@ function serializeTx (txObj: TXOBJ): string {
 
     // ScriptPubKey
     serializedTx += _buf32.toString('hex')
-    serializedTx += zbufferutils.getStringBufferLength(o.script)
+    serializedTx += zbufferutils.getPushDataLength(o.script)
     serializedTx += o.script
   })
 
@@ -390,9 +400,9 @@ function signTx (
   const pubKey = zaddress.privKeyToPubKey(privKey, compressPubKey)
 
   txObj.ins[i].script =
-    zbufferutils.getStringBufferLength(scriptSig) +
+    zbufferutils.getPushDataLength(scriptSig) +
     scriptSig +
-    zbufferutils.getStringBufferLength(pubKey) +
+    zbufferutils.getPushDataLength(pubKey) +
     pubKey
 
   return txObj
@@ -402,7 +412,7 @@ function signTx (
  * Multi signs the raw transaction
  * @param {String} rawTx raw transaction
  * @param {Int} index fof tx.in to sign
- * @param {privKey} [list of your private keys associated with the multisig] (not WIF format) 
+ * @param {privKey} [list of your private keys associated with the multisig] (not WIF format)
  * @param {hashcode} hashcode (default SIGHASH_ALL)
  * return {String} signed transaction
  */
@@ -426,10 +436,8 @@ function multiSignTx (
   // http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
   // Look up the table @ raw spending transaction
   const signatures: string = privKeys.map((x) => {
-    // sig is the signature
-    // 'push 71 bytes' is the size of the signature
     const sig = getScriptSignature(x, signingTx, hashcode)
-    const sigSize = zbufferutils.getStringBufferLength(sig)
+    const sigSize = zbufferutils.getPushDataLength(sig)
     return sigSize + sig
   }).join('')
 
@@ -437,7 +445,7 @@ function multiSignTx (
     zopcodes.OP_0 +
     signatures +
     zopcodes.OP_PUSHDATA1 +
-    zbufferutils.getStringBufferLength(redeemScript) +
+    zbufferutils.getPushDataLength(redeemScript) +
     redeemScript
 
   return txObj

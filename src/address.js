@@ -84,7 +84,7 @@ function mkMultiSigRedeemScript (pubKeys: [string], M: number, N: number): strin
   const OP_START = (OP_1.readInt8(0) + (M - 1)).toString(16)
   const OP_END = (OP_1.readInt8(0) + (N - 1)).toString(16)
 
-  return OP_START + pubKeys.map((x) => zbufferutils.getStringBufferLength(x) + x).join('') + OP_END + zopcodes.OP_CHECKMULTISIG
+  return OP_START + pubKeys.map((x) => zbufferutils.getPushDataLength(x) + x).join('') + OP_END + zopcodes.OP_CHECKMULTISIG
 }
 
 /*
