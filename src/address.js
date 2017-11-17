@@ -93,11 +93,11 @@ function mkMultiSigRedeemScript (pubKeys: [string], M: number, N: number): strin
  * @param {String} RedeemScript (redeem script)
  * @return {String} Address
  */
-function multiSigRSToAddress (redeemScript: string): string {
+function multiSigRSToAddress (redeemScript: string, scriptHash: string = zconfig.mainnet.scriptHash): string {
   // Protocol: RIPEMD160(SHA256(script))
   const s256 = zcrypto.sha256(Buffer.from(redeemScript, 'hex'))
   const r160 = zcrypto.ripemd160(Buffer.from(s256, 'hex'))
-  return bs58check.encode(Buffer.from(zconfig.mainnet.scriptHash + r160, 'hex'))
+  return bs58check.encode(Buffer.from(scriptHash + r160, 'hex'))
 }
 
 module.exports = {
