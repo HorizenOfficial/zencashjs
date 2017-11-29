@@ -140,16 +140,7 @@ function signatureForm (
     newTx.ins[j].script = ''
   }
 
-  // https://github.com/vbuterin/pybitcointools/blob/6db88d846d3dd0414f9064febd98d2553e14f953/bitcoin/transaction.py#L310
-  if (newTx.ins[i].script.length < 75) {
-    newTx.ins[i].script = script
-  } else if (newTx.ins[i].script.length < 256) {
-    newTx.ins[i].script = zopcodes.OP_DUP + script
-  } else if (newTx.ins[i].script.length < 65536) {
-    newTx.ins[i].script = zopcodes.OP_NIP + script
-  } else {
-    newTx.ins[i].script = zopcodes.OP_OVER + script
-  }
+  newTx.ins[i].script = script
 
   if (hashcode === zconstants.SIGHASH_NONE) {
     newTx.outs = []
@@ -455,6 +446,15 @@ function applyMultiSignatures (
   // Make a copy
   var txObj = JSON.parse(JSON.stringify(_txObj))
 
+  var redeemScriptPushDataLength = zbufferutils.getPushDataLength(redeemScript)
+
+  // Lmao no idea, just following the source code
+  if (redeemScriptPushDataLength.length > 2) {
+    if (redeemScriptPushDataLength.length === 6) {
+      redeemScriptPushDataLength = redeemScriptPushDataLength.slice(2, 4)
+    }
+  }
+
   // http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
   txObj.ins[i].script =
     zopcodes.OP_0 +
@@ -462,7 +462,7 @@ function applyMultiSignatures (
       return zbufferutils.getPushDataLength(x) + x
     }).join('') +
     zopcodes.OP_PUSHDATA1 +
-    zbufferutils.getPushDataLength(redeemScript) +
+    redeemScriptPushDataLength +
     redeemScript
 
   return txObj
