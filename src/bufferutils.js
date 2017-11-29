@@ -1,4 +1,5 @@
 // @flow
+var varuint = require('varuint-bitcoin')
 
 // https://github.com/bitcoinjs/bitcoinjs-lib/issues/14
 function numToBytes (num: number, bytes: number) {
@@ -7,12 +8,7 @@ function numToBytes (num: number, bytes: number) {
 }
 
 function numToVarInt (num: number): string {
-  var b
-  if (num < 253) b = [num]
-  else if (num < 65536) b = [253].concat(numToBytes(num, 2))
-  else if (num < 4294967296) b = [254].concat(numToBytes(num, 4))
-  else b = [253].concat(numToBytes(num, 8))
-  return Buffer.from(b).toString('hex')
+  return varuint.encode(num).toString('hex')
 }
 
 // https://github.com/feross/buffer/blob/master/index.js#L1127
@@ -54,18 +50,10 @@ function writeUInt64LE (buffer: Buffer, value: number, offset: number) {
  * @param {String} hexStr
  * return {String} Length of hexStr in bytes
  */
-function getPushDataLength (hexStr: string): string {
-  // This is the 'ToByteVector' in bitcoin source code
-  let b: string
-  const _tmpBuf = Buffer.from(hexStr, 'hex').length
-  if (hexStr.length < 253) {
-    b = Buffer.from([_tmpBuf]).toString('hex')
-  } else {
-    // Little Endian
-    // Bunch of magic numbers i reversed engineered from the zen protocol...
-    b = Buffer.from([253, _tmpBuf, Math.floor(_tmpBuf / 256)]).toString('hex')
-  }
-  return b
+function getPushDataLength (s: string): string {
+  // https://en.bitcoin.it/wiki/Protocol_documentation#Variable_length_integer
+  const hexLength = Buffer.from(s, 'hex').length
+  return numToVarInt(hexLength)
 }
 
 module.exports = {
