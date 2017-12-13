@@ -30,6 +30,19 @@ var txobj = zencashjs.transaction.createRawTx(
   blockHeight,
   blockHash
 )
+
+// To do a NULL_DATA transaction
+// var txobj = zencashjs.transaction.createRawTx(
+//   [{
+//       txid: '196173ec34d22a52cc689a21d01dd33b633671cbe1141e7e66240c7f3b4ccf7b', vout: 0,
+//       scriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
+//   }],
+//   [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 99000},
+//    {address: undefined, data: 'hello world', satoshis: 900}],
+//   blockHeight,
+//   blockHash
+// )
+
 // zencashjs.transaction.serializeTx(txobj)
 // 01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000
 
