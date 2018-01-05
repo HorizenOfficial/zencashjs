@@ -20,7 +20,7 @@ var zopcodes = require('./opcodes')
  * @param {String} pubKeyHash (optional)
  * return {String} pubKeyScript
  */
-function mkNullDataReplayScript(
+function mkNullDataReplayScript (
   data: string,
   blockHeight: number,
   blockHash: string
@@ -59,7 +59,7 @@ function mkNullDataReplayScript(
  * @param {String} pubKeyHash (optional)
  * return {String} pubKeyScript
  */
-function mkPubkeyHashReplayScript(
+function mkPubkeyHashReplayScript (
   address: string,
   blockHeight: number,
   blockHash: string,
@@ -105,7 +105,7 @@ function mkPubkeyHashReplayScript(
  * @param {Number} blockHash
  * return {String} scriptHash script
  */
-function mkScriptHashReplayScript(
+function mkScriptHashReplayScript (
   address: string,
   blockHeight: number,
   blockHash: string
@@ -143,7 +143,7 @@ function mkScriptHashReplayScript(
  * @param {Number} blockHash
  * return {String} output script
  */
-function addressToScript(
+function addressToScript (
   address: string,
   blockHeight: number,
   blockHash: string,
@@ -171,7 +171,7 @@ function addressToScript(
  * @param {String} hash code (SIGHASH_ALL, SIGHASH_NONE...)
  * return {String} output script
  */
-function signatureForm(
+function signatureForm (
   txObj: TXOBJ,
   i: number,
   script: string,
@@ -207,7 +207,7 @@ function signatureForm(
  * @param {String} hex string
  * @return {Object} txOBJ
  */
-function deserializeTx(hexStr: string): TXOBJ {
+function deserializeTx (hexStr: string): TXOBJ {
   const buf = Buffer.from(hexStr, 'hex')
   var offset = 0
 
@@ -277,7 +277,7 @@ function deserializeTx(hexStr: string): TXOBJ {
  * @param {Object} txObj
  * return {String} hex string of txObj
  */
-function serializeTx(txObj: TXOBJ): string {
+function serializeTx (txObj: TXOBJ): string {
   var serializedTx = ''
   var _buf16 = Buffer.alloc(4)
 
@@ -335,7 +335,7 @@ function serializeTx(txObj: TXOBJ): string {
  * @param {String} blockHash of blockHeight
  * @return {TXOBJ} Transction Object (see TXOBJ type for info about structure)
  */
-function createRawTx(
+function createRawTx (
   history: HISTORY[],
   recipients: RECIPIENTS[],
   blockHeight: number,
@@ -367,7 +367,7 @@ function createRawTx(
  * @params {TXOBJ} signingTx a txobj whereby all the vin script's field are empty except for the one that needs to be signed
  * @params {number} hashcode
 */
-function getScriptSignature(
+function getScriptSignature (
   privKey: string,
   signingTx: TXOBJ,
   hashcode: number
@@ -407,7 +407,7 @@ function getScriptSignature(
  * @param {hashcode} hashcode (default SIGHASH_ALL)
  * return {String} signed transaction
  */
-function signTx(
+function signTx (
   _txObj: TXOBJ,
   i: number,
   privKey: string,
@@ -453,7 +453,7 @@ function signTx(
  * @param {string} hashcode (SIGHASH_ALL, SIGHASH_NONE, etc)
  * return {String} signature
  */
-function multiSign(
+function multiSign (
   _txObj: TXOBJ,
   i: number,
   privKey: string,
@@ -482,15 +482,45 @@ function multiSign(
  * @param {string} hashcode (SIGHASH_ALL, SIGHASH_NONE, etc)
  * return {String} signature
  */
-function applyMultiSignatures(
+function applyMultiSignatures (
   _txObj: TXOBJ,
   i: number,
   signatures: [string],
-  redeemScript: string
+  redeemScript: string,
+  hashcode: number = zconstants.SIGHASH_ALL
 ): TXOBJ {
   // Make a copy
   var txObj = JSON.parse(JSON.stringify(_txObj))
 
+  // TODO: make it stateless
+  // Fix signature order
+  // var rsFixed = redeemScript.slice(2)
+  // var pubKeys = []
+
+  // // 30 was chosen arbitrarily as the minimum length
+  // // of a pubkey is 33
+  // while (rsFixed.length > 30) {
+  //   // Convert pushdatalength from hex to int
+  //   // Extract public key
+  //   var pushDataLength = parseInt(rsFixed.slice(0, 2), 16).toString(10)
+  //   var pubkey = Buffer.from(rsFixed.slice(2), 'hex').slice(0, pushDataLength).toString('hex')
+  //   pubKeys = pubKeys.concat(pubkey)
+
+  //   rsFixed = rsFixed.slice(2 + pubkey.length)
+  // }
+
+  // var unmatched = JSON.parse(JSON.stringify(signatures))
+
+  // const signaturesFixed = pubKeys.map(pubKey => {
+  //   const keyPair = secp256k1.keyFromPublic(pubKey)
+
+  //   var match    
+
+  //   unmatched.some((sig, i) => {
+  //     if (!sig) return false      
+  //   })
+  // })
+  
   var redeemScriptPushDataLength = zbufferutils.getPushDataLength(redeemScript)
 
   // Lmao no idea, just following the source code
