@@ -12,20 +12,11 @@ var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 
-/* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
- * Given an address, generates a pubkeyhash replay type script needed for the transaction
- * @param {String} address
- * @param {Number} blockHeight
- * @param {Number} blockHash
- * @param {String} pubKeyHash (optional)
- * return {String} pubKeyScript
- */
 function mkNullDataReplayScript (
   data: string,
   blockHeight: number,
   blockHash: string
 ): string {
-  // Get lengh of pubKeyHash (so we know where to substr later on)
   var dataHex = Buffer.from(data).toString('hex')
 
   // Minimal encoding
@@ -36,7 +27,7 @@ function mkNullDataReplayScript (
   }
   var blockHeightHex = blockHeightBuffer.toString('hex')
 
-  // block hash is encoded in little indian
+  // Block hash is encoded in little indian
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
   return (
@@ -51,8 +42,9 @@ function mkNullDataReplayScript (
   )
 }
 
-/* More info: https://github.com/ZencashOfficial/zen/blob/master/src/script/standard.cpp#L377
+/*
  * Given an address, generates a pubkeyhash replay type script needed for the transaction
+ * More info: https://github.com/ZencashOfficial/zen/blob/bb93453d39f86f7889e87c50f06400427a66f816/src/script/standard.cpp#L403
  * @param {String} address
  * @param {Number} blockHeight
  * @param {Number} blockHash
@@ -65,7 +57,6 @@ function mkPubkeyHashReplayScript (
   blockHash: string,
   pubKeyHash: string = zconfig.mainnet.pubKeyHash
 ): string {
-  // Get lengh of pubKeyHash (so we know where to substr later on)
   var addrHex = bs58check.decode(address).toString('hex')
 
   // Cut out pubKeyHash
@@ -79,10 +70,9 @@ function mkPubkeyHashReplayScript (
   }
   var blockHeightHex = blockHeightBuffer.toString('hex')
 
-  // block hash is encoded in little indian
+  // Block hash is encoded in little indian
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
-  // '14' is the length of the subAddrHex (in bytes)
   return (
     zopcodes.OP_DUP +
     zopcodes.OP_HASH160 +
@@ -120,7 +110,7 @@ function mkScriptHashReplayScript (
   }
   var blockHeightHex = blockHeightBuffer.toString('hex')
 
-  // Need to reverse it
+  // Block hash is encoded in little indian
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
   return (
@@ -310,7 +300,7 @@ function serializeTx (txObj: TXOBJ): string {
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/src/bufferutils.js#L25
     var _buf32 = Buffer.alloc(8)
 
-    // Satohis
+    // Satoshis
     _buf32.writeInt32LE(o.satoshis & -1, 0)
     _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
 

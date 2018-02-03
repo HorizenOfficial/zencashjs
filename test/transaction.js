@@ -19,7 +19,7 @@ it('serializeTx() and desrializeTx() should be deterministic', function () {
   var txobj_serialized = zencashjs.transaction.serializeTx(txobj)
   var txobj_deserialized = zencashjs.transaction.deserializeTx(txobj_serialized)
 
-  // Remove prevScriptPubKey since its not really an attribute
+  // Remove prevScriptPubKey since it's not really an attribute
   for (var i = 0; i < txobj.ins.length; i++) {
     txobj.ins[i].prevScriptPubKey = ''
   }
