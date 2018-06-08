@@ -18,6 +18,8 @@ module.exports = {
   testnet: {
     wif: 'ef',
     pubKeyHash: '2098',
-    scriptHash: '2092'
+    scriptHash: '2092',
+    zcPaymentAddressHash: '16b6',
+    zcSpendingKeyHash: 'ac08'
   }
 }
