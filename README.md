@@ -11,11 +11,11 @@ var priv = zencashjs.address.mkPrivKey('chris p. bacon, defender of the guardian
 var privWIF = zencashjs.address.privKeyToWIF(priv)
 // 5J9mKPd531Tk4A73kKp4iowoi6EvhEp8QSMAVzrZhuzZkdpYbK8
 
-var pubKey = zencashjs.address.privKeyToPubKey(priv)
-// 048a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2e4d234528ff87b83f971ab2b12cd2939ff33c7846716827a5b0e8233049d8aad
+var pubKey = zencashjs.address.privKeyToPubKey(priv, true) // generate compressed pubKey
+// 038a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2
 
 var zAddr = zencashjs.address.pubKeyToAddr(pubKey)
-// znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf
+// znnjppzJG7ajT7f6Vp1AD6SjgcXBVPA2E6c
 
 // To create and sign a raw transaction at BLOCKHEIGHT and BLOCKHASH
 const blockHeight = 142091
