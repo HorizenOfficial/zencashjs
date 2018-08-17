@@ -64,6 +64,8 @@ function WIFToPrivKey (wifPk: string): string {
  * @return {String} zencash address
  */
 function pubKeyToAddr (pubKey: string, pubKeyHash: string = zconfig.mainnet.pubKeyHash): string {
+  const isCompressed = (pubKey.substr(0, 2) === '02')
+  pubKey = isCompressed ? pubKey : secp256k1.publicKeyConvert(Buffer.from(pubKey, 'hex'), true).toString('hex')
   const hash160 = zcrypto.hash160(Buffer.from(pubKey, 'hex'))
   return bs58check
     .encode(Buffer.from(pubKeyHash + hash160, 'hex'))

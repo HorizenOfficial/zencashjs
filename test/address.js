@@ -28,10 +28,16 @@ it('PrivateKeyToPublicKey() should be deterministic', function () {
 })
 
 it('PublicKeyToPublicAddress() should be deterministic', function () {
-  var priv = zencashjs.address.pubKeyToAddr(
-    '048a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2e4d234528ff87b83f971ab2b12cd2939ff33c7846716827a5b0e8233049d8aad'
+
+  var addrComp = zencashjs.address.pubKeyToAddr(
+    '028450b9273f2a3d85145f153b988c389f7b7803b03431f847ec850dc09bb6db5d'
   )
-  expect(priv).to.equal('znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf')
+  expect(addrComp).to.equal('zno4a6ahSfsXhvbtqxa8QSTNVRmbN8TmcoV')
+
+  var addr = zencashjs.address.pubKeyToAddr(
+    '048450b9273f2a3d85145f153b988c389f7b7803b03431f847ec850dc09bb6db5d375623658ec1fddd509c357114e3139afba4058e96556f0fc2a931e72f3d8bd4'
+  )
+  expect(addr).to.equal('zno4a6ahSfsXhvbtqxa8QSTNVRmbN8TmcoV')
 })
 
 it('mkMultiSigRedeemScript() should be deterministic', function () {
