@@ -401,7 +401,7 @@ function signTx (
   _txObj: TXOBJ,
   i: number,
   privKey: string,
-  compressPubKey: boolean = false,
+  compressPubKey: boolean = true,
   hashcode: number = zconstants.SIGHASH_ALL
 ): TXOBJ {
   // Make a copy
