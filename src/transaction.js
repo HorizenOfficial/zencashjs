@@ -143,13 +143,14 @@ function addressToScript (
   if (address === null || address === undefined) {
     return mkNullDataReplayScript(data, blockHeight, blockHash)
   }
-
-  // P2SH replay starts with a 's', or 'r'
-  if (address[1] === 's' || address[1] === 'r') {
+  const prefix = bs58check.decode(address).toString('hex').slice(0, 4);
+  // P2SH replay starts with a '2096' or '2092' prefix
+  if (prefix === '2096' || prefix === '2092') {
     return mkScriptHashReplayScript(address, blockHeight, blockHash)
   }
 
   // P2PKH-replay is a replacement for P2PKH
+  // P2PKH starts with a '2089' or '2098' prefix
   return mkPubkeyHashReplayScript(address, blockHeight, blockHash)
 }
 

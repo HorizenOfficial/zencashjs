@@ -87,12 +87,14 @@ const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3
 var txobj = zencashjs.transaction.createRawTx(
   [{
       txid: 'f5f324064de9caab9353674c59f1c3987ca997bf5882a41a722686883e089581', vout: 0,
-      scriptPubKey: '' // DOn't need script pub key since we'll be using redeemScript to sign
+      scriptPubKey: '' // Don't need script pub key since we'll be using redeemScript to sign
   }],
   [{address: 'zneng6nRqTrqTKfjYAqXT86HWtk96ftPjtX', satoshis: 10000}],
   blockHeight,
   blockHash
 )
+
+
 
 // Prepare our signatures for mutli-sig
 var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys[0], redeemScript)
