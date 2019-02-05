@@ -23,4 +23,5 @@ export type HISTORY = {
 export type RECIPIENTS = {
   satoshis: number,
   address: string,
+  data: string
 }
