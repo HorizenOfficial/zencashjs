@@ -17,9 +17,21 @@ var pubKey = zencashjs.address.privKeyToPubKey(priv, true) // generate compresse
 var zAddr = zencashjs.address.pubKeyToAddr(pubKey)
 // znnjppzJG7ajT7f6Vp1AD6SjgcXBVPA2E6c
 
-// To create and sign a raw transaction at BLOCKHEIGHT and BLOCKHASH
-const blockHeight = 142091
-const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
+// It is imperative that the block used for bip115BlockHeight and bip115BlockHash has a sufficient number of
+// confirmations (recommded values: 150 to 600 blocks older than current BLOCKHEIGHT). If the block used for 
+// the replay protection should get orphaned the transaction will be unspendable for at least 52596 blocks.
+// For details on the replay protection please see: https://github.com/bitcoin/bips/blob/master/bip-0115.mediawiki
+
+// To create and sign a raw transaction at BLOCKHEIGHT with BIP115BLOCKHEIGHT and BIP115BLOCKHASH
+const blockHeight = 450150 // Example of current BLOCKHEIGHT
+const bip115BlockHeight = blockHeight - 150 // Chaintip - 150 blocks, the block used for the replay protection needs a sufficient number of confirmations
+const bip115BlockHash = '0000000007844e62d471b966cc5926bd92e56a27d2c6a6ac8f90d34e11d3028d' // Blockhash of block 450000
+
+// If it is unfeasable to get the current BLOCKHEIGHT or transactions are to be signed completely offline
+// use hard coded values for BIP115BLOCKHEIGHT and BIP115BLOCKHASH that are at least 52596 blocks older than the
+// current BLOCKHEIGHT. For example:
+const bip115BlockHeight = 142091
+const bip115BlockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
 
 var txobj = zencashjs.transaction.createRawTx(
   [{
@@ -27,8 +39,8 @@ var txobj = zencashjs.transaction.createRawTx(
       scriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
   }],
   [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 100000}],
-  blockHeight,
-  blockHash
+  bip115BlockHeight,
+  bip115BlockHash
 )
 
 // To do a NULL_DATA transaction
@@ -39,8 +51,8 @@ var txobj = zencashjs.transaction.createRawTx(
 //   }],
 //   [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 99000},
 //    {address: undefined, data: 'hello world', satoshis: 900}],
-//   blockHeight,
-//   blockHash
+//   bip115BlockHeight,
+//   bip115BlockHash
 // )
 
 // zencashjs.transaction.serializeTx(txobj)
@@ -80,18 +92,30 @@ var redeemScript = zencashjs.address.mkMultiSigRedeemScript(pubKeys, 2, 3)
 var multiSigAddress = zencashjs.address.multiSigRSToAddress(redeemScript)
 // zsmSCni8GXoCdTGqUfn26QJVGh6rpaFs17T
 
-// To create and sign a raw transaction at BLOCKHEIGHT and BLOCKHASH
-const blockHeight = 142091
-const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
+// It is imperative that the block used for bip115BlockHeight and bip115BlockHash has a sufficient number of
+// confirmations (recommded values: 150 to 600 blocks older than current BLOCKHEIGHT). If the block used for
+// the replay protection should get orphaned the transaction will be unspendable for at least 52596 blocks.
+// For details on the replay protection please see: https://github.com/bitcoin/bips/blob/master/bip-0115.mediawiki
+
+// To create and sign a raw transaction at BLOCKHEIGHT with BIP115BLOCKHEIGHT and BIP115BLOCKHASH
+const blockHeight = 450150 // Example of current BLOCKHEIGHT
+const bip115BlockHeight = blockHeight - 150 // Chaintip - 150 blocks, the block used for the replay protection needs a sufficient number of confirmations
+const bip115BlockHash = '0000000007844e62d471b966cc5926bd92e56a27d2c6a6ac8f90d34e11d3028d' // Blockhash of block 450000
+
+// If it is unfeasable to get the current BLOCKHEIGHT or transactions are to be signed completely offline
+// use hard coded values for BIP115BLOCKHEIGHT and BIP115BLOCKHASH that are at least 52596 blocks older than the
+// current BLOCKHEIGHT. For example:
+const bip115BlockHeight = 142091
+const bip115BlockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
 
 var txobj = zencashjs.transaction.createRawTx(
   [{
-      txid: 'f5f324064de9caab9353674c59f1c3987ca997bf5882a41a722686883e089581', vout: 0,
-      scriptPubKey: '' // Don't need script pub key since we'll be using redeemScript to sign
+      txid: '196173ec34d22a52cc689a21d01dd33b633671cbe1141e7e66240c7f3b4ccf7b', vout: 0,
+      scriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
   }],
-  [{address: 'zneng6nRqTrqTKfjYAqXT86HWtk96ftPjtX', satoshis: 10000}],
-  blockHeight,
-  blockHash
+  [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 100000}],
+  bip115BlockHeight,
+  bip115BlockHash
 )
 
 
