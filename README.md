@@ -110,10 +110,10 @@ const bip115BlockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d
 
 var txobj = zencashjs.transaction.createRawTx(
   [{
-      txid: '196173ec34d22a52cc689a21d01dd33b633671cbe1141e7e66240c7f3b4ccf7b', vout: 0,
-      scriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
+      txid: 'f5f324064de9caab9353674c59f1c3987ca997bf5882a41a722686883e089581', vout: 0,
+      scriptPubKey: '' // Don't need script pub key since we'll be using redeemScript to sign
   }],
-  [{address: 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf', satoshis: 100000}],
+  [{address: 'zneng6nRqTrqTKfjYAqXT86HWtk96ftPjtX', satoshis: 10000}],
   bip115BlockHeight,
   bip115BlockHash
 )
