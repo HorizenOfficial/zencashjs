@@ -171,6 +171,6 @@ var Zaddress = zencashjs.zaddress.mkZAddress(a_pk, pk_enc)
 # edit src if you wanna make a PR
 git clone https://github.com/ZencashOfficial/zencashjs.git
 cd zencashjs
-yarn install
-yarn run [dev | build]
+npm install
+npm run [dev | build | test]
 ```
