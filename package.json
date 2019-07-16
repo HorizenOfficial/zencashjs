@@ -38,7 +38,7 @@
     "varint": "5.0.0",
     "varuint-bitcoin": "1.1.0",
     "webpack": "4.35.3",
-    "yargs": "13.2.4"
+    "yargs": "13.3.0"
   },
   "scripts": {
     "build": "babel src/ -d lib/",
