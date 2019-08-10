@@ -460,6 +460,23 @@ function multiSign (
   return getScriptSignature(privKey, signingTx, hashcode)
 }
 
+function txToMsg(_txObj, i, redeemScript, hashcode) {
+  var txObj = JSON.parse(JSON.stringify(_txObj))
+
+  // Populate current tx.ins[i] with the redeemScript
+  const signingTx = signatureForm(txObj, i, redeemScript, hashcode)
+  // Buffer
+  const _buf16 = Buffer.alloc(4)
+  _buf16.writeUInt16LE(hashcode, 0)
+
+  const signingTxHex = serializeTx(signingTx)
+  const signingTxWithHashcode = signingTxHex + _buf16.toString('hex')
+
+  // Sha256 it twice, according to spec
+  const msg = zcrypto.sha256x2(Buffer.from(signingTxWithHashcode, 'hex'))
+
+  return msg
+}
 /*
  * Applies the signatures to the transaction object
  * NOTE: You NEED to supply the signatures in order.
@@ -481,50 +498,80 @@ function applyMultiSignatures (
   hashcode: number = zconstants.SIGHASH_ALL
 ): TXOBJ {
   // Make a copy
-  var txObj = JSON.parse(JSON.stringify(_txObj))
+  const txObj = JSON.parse(JSON.stringify(_txObj))
 
-  // TODO: make it stateless
+  let rsFixed = redeemScript.slice(2)
+  let pubKeys = []
+
+  // 30 was chosen arbitrarily as the minimum length
+  // of a pubkey is 33
+  while (rsFixed.length > 30) {
+    // Convert pushdatalength from hex to int
+    // Extract public key
+    const pushDataLength = parseInt(rsFixed.slice(0, 2), 16).toString(10)
+    const pubkey = Buffer.from(rsFixed.slice(2), 'hex').slice(0, pushDataLength).toString('hex')
+    pubKeys = pubKeys.concat(pubkey)
+
+    rsFixed = rsFixed.slice(2 + pubkey.length)
+  }
+
+  let allSigs = signatures.slice()
+  // extract applied signatures
+  if (txObj.ins[i].script.length > 0) {
+    const prevSigs = []
+    const script = txObj.ins[i].script
+    const removedScriptSig = script.replace(redeemScript, '')
+    const removedTrails = removedScriptSig.slice(2, -4)
+    let sigs = removedTrails
+
+    while (sigs.length > 0) {
+      const sigLen = parseInt(sigs.slice(0, 2), 16).toString(10)
+      const sig = Buffer.from(sigs.slice(2), 'hex').slice(0, sigLen).toString('hex')
+      prevSigs.push(sig)
+      sigs = sigs.slice(2 + sig.length)
+    }
+    const newSigs = signatures.filter(sig => prevSigs.indexOf(sig) < 0)
+    allSigs = newSigs.concat(prevSigs)
+  }
+
   // Fix signature order
-  // var rsFixed = redeemScript.slice(2)
-  // var pubKeys = []
+  let unmatched = JSON.parse(JSON.stringify(allSigs))
+  const orderedSigs = []
+  pubKeys.map(pubKey => {
+    const keyPair = secp256k1.keyFromPublic(pubKey, 'hex')
+    const msg = txToMsg(txObj, i, redeemScript, hashcode)
+    let match
+    unmatched.some((sig, i) => {
+      if (!sig) return false
+      const ver = keyPair.verify(msg, Buffer.from(sig, 'hex').slice(0, -1))
 
-  // // 30 was chosen arbitrarily as the minimum length
-  // // of a pubkey is 33
-  // while (rsFixed.length > 30) {
-  //   // Convert pushdatalength from hex to int
-  //   // Extract public key
-  //   var pushDataLength = parseInt(rsFixed.slice(0, 2), 16).toString(10)
-  //   var pubkey = Buffer.from(rsFixed.slice(2), 'hex').slice(0, pushDataLength).toString('hex')
-  //   pubKeys = pubKeys.concat(pubkey)
+      if (!ver) {
+        return false
+      }
 
-  //   rsFixed = rsFixed.slice(2 + pubkey.length)
-  // }
+      unmatched[i] = undefined
+      match = sig
+      return true
+    })
 
-  // var unmatched = JSON.parse(JSON.stringify(signatures))
+    if (match) {
+      orderedSigs.push(match)
+    }
 
-  // const signaturesFixed = pubKeys.map(pubKey => {
-  //   const keyPair = secp256k1.keyFromPublic(pubKey)
+    return match
+  })
 
-  //   var match    
+  let redeemScriptPushDataLength = zbufferutils.getPushDataLength(redeemScript)
 
-  //   unmatched.some((sig, i) => {
-  //     if (!sig) return false      
-  //   })
-  // })
-  
-  var redeemScriptPushDataLength = zbufferutils.getPushDataLength(redeemScript)
-
-  // Lmao no idea, just following the source code
   if (redeemScriptPushDataLength.length > 2) {
     if (redeemScriptPushDataLength.length === 6) {
       redeemScriptPushDataLength = redeemScriptPushDataLength.slice(2, 4)
     }
   }
-
   // http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
   txObj.ins[i].script =
     zopcodes.OP_0 +
-    signatures.map((x) => {
+    orderedSigs.map((x) => {
       return zbufferutils.getPushDataLength(x) + x
     }).join('') +
     zopcodes.OP_PUSHDATA1 +
