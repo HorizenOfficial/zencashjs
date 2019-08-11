@@ -460,8 +460,8 @@ function multiSign (
   return getScriptSignature(privKey, signingTx, hashcode)
 }
 
-function txToMsg(_txObj, i, redeemScript, hashcode) {
-  var txObj = JSON.parse(JSON.stringify(_txObj))
+function txToMsg (_txObj, i, redeemScript, hashcode) {
+  const txObj = JSON.parse(JSON.stringify(_txObj))
 
   // Populate current tx.ins[i] with the redeemScript
   const signingTx = signatureForm(txObj, i, redeemScript, hashcode)
