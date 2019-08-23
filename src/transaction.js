@@ -11,6 +11,7 @@ var zcrypto = require('./crypto')
 var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
+const pushdata = require('pushdata-bitcoin')
 
 function mkNullDataReplayScript (
   data: string,
@@ -561,21 +562,17 @@ function applyMultiSignatures (
     return match
   })
 
-  let redeemScriptPushDataLength = zbufferutils.getPushDataLength(redeemScript)
+  const redeemScriptLenght = Buffer.from(redeemScript, 'hex').length
+  const pushDataBuffer = Buffer.alloc(pushdata.encodingLength(redeemScriptLenght))
+  pushdata.encode(pushDataBuffer, redeemScriptLenght, 0)
 
-  if (redeemScriptPushDataLength.length > 2) {
-    if (redeemScriptPushDataLength.length === 6) {
-      redeemScriptPushDataLength = redeemScriptPushDataLength.slice(2, 4)
-    }
-  }
   // http://www.soroushjp.com/2014/12/20/bitcoin-multisig-the-hard-way-understanding-raw-multisignature-bitcoin-transactions/
   txObj.ins[i].script =
     zopcodes.OP_0 +
     orderedSigs.map((x) => {
       return zbufferutils.getPushDataLength(x) + x
     }).join('') +
-    zopcodes.OP_PUSHDATA1 +
-    redeemScriptPushDataLength +
+    pushDataBuffer.toString('hex') +
     redeemScript
 
   return txObj

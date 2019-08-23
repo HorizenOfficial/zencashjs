@@ -191,3 +191,42 @@ it('addressToScript should be deterministic for both P2SH and P2PKH on mainnet a
   expect(zencashjs.transaction.addressToScript(addr2, blockHeight, blockHash, '')).to.equal('76a9143bc25502467ba509b9fb3680148a12b89c56247088ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b4');
   expect(zencashjs.transaction.addressToScript(addr3, blockHeight, blockHash, '')).to.equal('76a914ab523674d9f2ed5a0b300aeb072fc09801363f9f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b4');
 })
+
+it ('2 of 3 and 2 of 2 multisig test', function() {
+  var privKeysWIF2 = ['KxU4LGtnSWYNyaqGrASsVQrdhLjXaTxNfkNr6RhmS4n2cq8HaT3P', 'KwZrg9yGTaDJcQuy6QD2qRLGFiev85uV3rLuN2oaLKmHB45Nneso']
+  var privKeysWIF3 = ['KxU4LGtnSWYNyaqGrASsVQrdhLjXaTxNfkNr6RhmS4n2cq8HaT3P', 'KwZrg9yGTaDJcQuy6QD2qRLGFiev85uV3rLuN2oaLKmHB45Nneso', 'Kz6bk2iz2qWRQvTiCKdeS7YAXcbSrRhreBNoxfJJBhtJxTUuiQYg']
+
+  var privKeys2 = privKeysWIF2.map((x) => zencashjs.address.WIFToPrivKey(x))
+  var privKeys3 = privKeysWIF3.map((x) => zencashjs.address.WIFToPrivKey(x))
+  var pubKeys2 = privKeys2.map((x) => zencashjs.address.privKeyToPubKey(x, true))
+  var pubKeys3 = privKeys3.map((x) => zencashjs.address.privKeyToPubKey(x, true))
+
+  const bip115BlockHeight = 142091
+  const bip115BlockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
+
+  var txobj = zencashjs.transaction.createRawTx(
+    [{
+      txid: '4f23a3cc63e23d72c0d78e571cda5592d1a9dc96ebc0e418c89fde2da443bc28', vout: 0,
+      scriptPubKey: ''
+    }],
+    [{address: 'znnpwiiu2ip5J1avwc8mx9AYugEa4uPsztH', satoshis: 50000}],
+    bip115BlockHeight,
+    bip115BlockHash
+  )
+
+  // 2-of-3
+  var redeemScript2of3 = zencashjs.address.mkMultiSigRedeemScript(pubKeys3, 2, 3)
+  var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys3[0], redeemScript2of3)
+  var sig2 = zencashjs.transaction.multiSign(txobj, 0, privKeys3[1], redeemScript2of3)
+  var tx2of3 = zencashjs.transaction.applyMultiSignatures(txobj, 0, [sig1, sig2], redeemScript2of3)
+  var serializedTx2of3 = zencashjs.transaction.serializeTx(tx2of3)
+  expect(serializedTx2of3).to.equal('010000000128bc43a42dde9fc818e4c0eb96dca9d19255da1c578ed7c0723de263cca3234f00000000fc0047304402206797e487ffa0ccdd3e4cd965cf9b41eaa8a1fd957b44bdb5187a1fe62312c9a60220543fbc37abba9f295754d618f1f08b0480fef6802b19ae48427a59a4641bc81d0147304402200b4c53ab248a71251f480035410ecf9ebecc65852ceec28c9fecd496ef517cdf0220705f4e8a4945e99525fdb3690590cad59ef7e4d263f03aa6a7838ba737315af4014c69522103242158c89a5b8e8ec43109aaef3af5f38663fb386e938449223093b3489dce7821025a64a7dd8a22a8c02b5889c444b785d0708aa00ee7e47ba2507a9551bd23bf6f21033112c1f918a46d8a1b09f1c75ccbc61d96e0c87981305c7bb30af21ba775736453aeffffffff0150c30000000000003f76a914ee7df8a9a481cd7338ee41c5a2557ffa985eaa1e88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
+
+  // 2-of-2
+  var redeemScript2of2 = zencashjs.address.mkMultiSigRedeemScript(pubKeys2, 2, 2)
+  var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys2[0], redeemScript2of2)
+  var sig2 = zencashjs.transaction.multiSign(txobj, 0, privKeys2[1], redeemScript2of2)
+  var tx2of2 = zencashjs.transaction.applyMultiSignatures(txobj, 0, [sig1, sig2], redeemScript2of2)
+  var serializedTx2of2 = zencashjs.transaction.serializeTx(tx2of2)
+  expect(serializedTx2of2).to.equal('010000000128bc43a42dde9fc818e4c0eb96dca9d19255da1c578ed7c0723de263cca3234f00000000d90047304402207bf91cf8c2832c40dbb2741f01384d3b17795e9bcb77460b6c3fa19226620b730220662a0de28576e9322be0bd9b842e84624663455699b050e7a11c0af1e025278a0147304402201640dc9c57a197bd619e182ea32011a0a8b167862ac2b77b852f7f463092f65d02200ae0f62d16d2e948e765ceca19a82c1a1415dbffe79726baaa102555eae284bf0147522103242158c89a5b8e8ec43109aaef3af5f38663fb386e938449223093b3489dce7821025a64a7dd8a22a8c02b5889c444b785d0708aa00ee7e47ba2507a9551bd23bf6f52aeffffffff0150c30000000000003f76a914ee7df8a9a481cd7338ee41c5a2557ffa985eaa1e88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
+})
