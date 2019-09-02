@@ -19,6 +19,10 @@ it('serializeTx() and desrializeTx() should be deterministic', function () {
   var txobj_serialized = zencashjs.transaction.serializeTx(txobj)
   var txobj_deserialized = zencashjs.transaction.deserializeTx(txobj_serialized)
 
+  var txobj_serialized_full = zencashjs.transaction.serializeTx(txobj, true)
+  var txobj_deserialized_full = zencashjs.transaction.deserializeTx(txobj_serialized_full, true)
+  expect(txobj_deserialized_full).to.deep.equal(txobj)
+
   // Remove prevScriptPubKey since it's not really an attribute
   for (var i = 0; i < txobj.ins.length; i++) {
     txobj.ins[i].prevScriptPubKey = ''
@@ -26,6 +30,63 @@ it('serializeTx() and desrializeTx() should be deterministic', function () {
 
   expect(txobj_serialized).to.equal('01000000019dd5ae887ce5e354c4cabe75230a439b03e494f36c5e7726cb7385f892a304270000000000ffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
   expect(txobj_deserialized).to.deep.equal(txobj)
+})
+
+it('transaction.mkPubkeyHashReplayScript() valid block with special height 0 (range [0; 16])', function () {
+  // Test data was generated on regtest zen node
+  const script = zencashjs.transaction.mkPubkeyHashReplayScript(
+    'ztfMkdeBW116Q7KRaiGL2qG1kSKGya85NHA',
+    0,
+    '0da5ee723b7923feb580518541c6f098206330dbc711a6678922c11f2ccf1abb'
+  )
+  expect(script).to.equal(
+    '76a91485dc608e2036a336e26e6da6aa2b807d0ac5206388ac20bb1acf2c1fc1228967a611c7db30632098f0c641855180b5fe23793b72eea50d00b4'
+  )
+})
+
+it('transaction.mkPubkeyHashReplayScript() valid block with special height 5 (range [0; 16])', function () {
+  const script = zencashjs.transaction.mkPubkeyHashReplayScript(
+    'ztfMkdeBW116Q7KRaiGL2qG1kSKGya85NHA',
+    5,
+    '083152db9752b7297b8a634c62484825867f1dc8c912ba2aaa255c7cdac64030'
+  )
+  expect(script).to.equal(
+    '76a91485dc608e2036a336e26e6da6aa2b807d0ac5206388ac203040c6da7c5c25aa2aba12c9c81d7f86254848624c638a7b29b75297db52310855b4'
+  )
+})
+
+it('transaction.mkPubkeyHashReplayScript() valid block with 1 byte length height', function () {
+  const script = zencashjs.transaction.mkPubkeyHashReplayScript(
+    'ztfMkdeBW116Q7KRaiGL2qG1kSKGya85NHA',
+    33,
+    '02a2573d34cffa49730be6628ffa221ace053d7f01cbf5a95d879dd1f4649850'
+  )
+  expect(script).to.equal(
+    '76a91485dc608e2036a336e26e6da6aa2b807d0ac5206388ac20509864f4d19d875da9f5cb017f3d05ce1a22fa8f62e60b7349facf343d57a2020121b4'
+  )
+})
+
+it('transaction.mkPubkeyHashReplayScript() valid block with 2 bytes length height', function () {
+  const script = zencashjs.transaction.mkPubkeyHashReplayScript(
+    'ztfMkdeBW116Q7KRaiGL2qG1kSKGya85NHA',
+    1005,
+    '0884efb1d47ceb0241fd70b5b470474f3ae2a4af9240926924c79b2e3e0c14a0'
+  )
+  expect(script).to.equal(
+    '76a91485dc608e2036a336e26e6da6aa2b807d0ac5206388ac20a0140c3e2e9bc72469924092afa4e23a4f4770b4b570fd4102eb7cd4b1ef840802ed03b4'
+  )
+})
+
+
+it('transaction.mkPubkeyHashReplayScript() valid block with 3 bytes length height', function () {
+  const script = zencashjs.transaction.mkPubkeyHashReplayScript(
+    'ztfMkdeBW116Q7KRaiGL2qG1kSKGya85NHA',
+    65678,
+    '0ec034235a4e2be08a4c55f658eefeb6ffd1c85dcd778bbe2ff735a1ce200c74'
+  )
+  expect(script).to.equal(
+    '76a91485dc608e2036a336e26e6da6aa2b807d0ac5206388ac20740c20cea135f72fbe8b77cd5dc8d1ffb6feee58f6554c8ae02b4e5a2334c00e038e0001b4'
+  )
 })
 
 it('signTx() should be deterministic', function () {
@@ -50,6 +111,29 @@ it('signTx() should be deterministic', function () {
   var signed_serialized = zencashjs.transaction.serializeTx(signedobj)
 
   expect(signed_serialized).to.equal('0100000001383dedb49935f49f5ef93b6b007d468c2a337cfe6f5dc0af62a151a419219859000000006a473044022035f718d8bafdec55f22d705fee46bd9f2c7cd4261c93a4f24161774b84c77e8b02205e9405e0518f4759b68333472090907f0a29c65bb5cf5e9f2ddf2532ddc506330121038a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2ffffffff0140420f00000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
+
+
+  // check that we able to sign object after being serialized/deserialized with prevScriptPubKey
+  var txobj_serialized_full = zencashjs.transaction.serializeTx(txobj, true)
+  var txobj_deserialized_full = zencashjs.transaction.deserializeTx(txobj_serialized_full, true)
+
+  signedobj = zencashjs.transaction.signTx(txobj_deserialized_full, 0, '2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c', compressPubKey, SIGHASH_ALL)
+  signed_serialized = zencashjs.transaction.serializeTx(signedobj)
+  expect(signed_serialized).to.equal('0100000001383dedb49935f49f5ef93b6b007d468c2a337cfe6f5dc0af62a151a419219859000000006a473044022035f718d8bafdec55f22d705fee46bd9f2c7cd4261c93a4f24161774b84c77e8b02205e9405e0518f4759b68333472090907f0a29c65bb5cf5e9f2ddf2532ddc506330121038a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2ffffffff0140420f00000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000')
+
+
+  // check that we are NOT able to sign object being serialized/deserialized WITHOUT prevScriptPubKey
+  var txobj_serialized = zencashjs.transaction.serializeTx(txobj)
+  var txobj_deserialized = zencashjs.transaction.deserializeTx(txobj_serialized)
+
+  var errorOccurred = false
+  try {
+    signedobj = zencashjs.transaction.signTx(txobj_serialized, 0, '2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c', compressPubKey, SIGHASH_ALL)
+  }
+  catch(err) {
+	errorOccurred = true
+  }
+  expect(errorOccurred).to.equal(true)
 })
 
 it('NULL_DATA() should be deterministic', function () {
@@ -110,9 +194,11 @@ it('multiSign() for x-of-5 should be deterministic', function () {
   var tx0 = zencashjs.transaction.applyMultiSignatures(txobj, 0, [sig1, sig2], redeemScript)
 
   // Serialize the transaction
-  var serializedTx = zencashjs.transaction.serializeTx(tx0)
+  var serializedTx = zencashjs.transaction.serializeTx(tx0, true)
+  expect(serializedTx).to.equal('0100000001d9827931627184e3264faf57f8baf4beb318b746683d7d8d5d74abf1e44df0d60000000000fd41010047304402206cdd40e6a2906d811d4effb6d70ff25b30a60712255f6b9e974ed71167dffbfb0220481e0e88ec15bfa0d415d6247b14eeb96ac55b2430fb13919ea68b7b7042c92b01483045022100d63748ef626d6336c56a68788906f4a25d83d04c78cf6ea671205aea38a39c9302207b9d679c6fc3970f86dcf912eb82fe69a98843ab69aa63cdd54a0e5023469c86014cad522103e05e33c3322eebb714a070b3a3d8c4d8df24afaa954b73588fb93d225459a8ec21036e8b46ab143d44946080dfe980ff4b17df278e49bae86002c613b23732b20af32103184c5dad8794b6d9b129748e4bb6f7cc56de42bc05e48f2a09521f8018e637e12103b9119362574b8ce5812f72f23e9bca338a90c4f47dfd0dbb3b9e7aa596b422ad2102d52494ff1c42d4e5dd81bc4940368e15137bb62f0963300217291d11682ccc2255aeffffffff0100f2052a010000003e76a914ab523674d9f2ed5a0b300aeb072fc09801363f9f88ac20c89eb7cb5f930502dce0e1750ed58f8366203c0fa45d32226aab063f7fc8140202f03cb400000000')
 
-  expect(serializedTx).to.equal('0100000001d9827931627184e3264faf57f8baf4beb318b746683d7d8d5d74abf1e44df0d600000000fd40010047304402207c349f3598d8e1ab3bc207074686d1e909d3e5704cd13ec68b973bed0f5317d80220623927b46ab45ce2c0b4864dd2b7b6867fd3a78e05d9590e2a59cb2cbef512ca01473044022052a34052dcca05b80e7dbdf419d96ad08bf2f70a5babd5ebf9c07719cf23535002202e83430d40eaed523bfda739651ef1e1baabd596e80aed2923cfc1b1692b2e41014cad522103e05e33c3322eebb714a070b3a3d8c4d8df24afaa954b73588fb93d225459a8ec21036e8b46ab143d44946080dfe980ff4b17df278e49bae86002c613b23732b20af32103184c5dad8794b6d9b129748e4bb6f7cc56de42bc05e48f2a09521f8018e637e12103b9119362574b8ce5812f72f23e9bca338a90c4f47dfd0dbb3b9e7aa596b422ad2102d52494ff1c42d4e5dd81bc4940368e15137bb62f0963300217291d11682ccc2255aeffffffff0100f2052a010000003f76a914ab523674d9f2ed5a0b300aeb072fc09801363f9f88ac20c89eb7cb5f930502dce0e1750ed58f8366203c0fa45d32226aab063f7fc8140203f03c00b400000000')
+  var deserializedTx = zencashjs.transaction.deserializeTx(serializedTx, true)
+  expect(deserializedTx).to.deep.equal(tx0)
 })
 
 it('multiSign() and applyMultiSignatures() and should be deterministic', function () {
