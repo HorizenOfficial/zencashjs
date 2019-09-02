@@ -19,14 +19,6 @@ function mkNullDataReplayScript (
 ): string {
   var dataHex = Buffer.from(data).toString('hex')
 
-  // Minimal encoding
-  var blockHeightBuffer = Buffer.alloc(4)
-  blockHeightBuffer.writeUInt32LE(blockHeight, 0)
-  if (blockHeightBuffer[3] === 0x00) {
-    blockHeightBuffer = blockHeightBuffer.slice(0, 3)
-  }
-  var blockHeightHex = blockHeightBuffer.toString('hex')
-
   // Block hash is encoded in little indian
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
@@ -36,8 +28,7 @@ function mkNullDataReplayScript (
     dataHex +
     zbufferutils.getPushDataLength(blockHashHex) +
     blockHashHex +
-    zbufferutils.getPushDataLength(blockHeightHex) +
-    blockHeightHex +
+    serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
 }
@@ -62,14 +53,6 @@ function mkPubkeyHashReplayScript (
   // Cut out pubKeyHash
   var subAddrHex = addrHex.substring(pubKeyHash.length, addrHex.length)
 
-  // Minimal encoding
-  var blockHeightBuffer = Buffer.alloc(4)
-  blockHeightBuffer.writeUInt32LE(blockHeight, 0)
-  if (blockHeightBuffer[3] === 0x00) {
-    blockHeightBuffer = blockHeightBuffer.slice(0, 3)
-  }
-  var blockHeightHex = blockHeightBuffer.toString('hex')
-
   // Block hash is encoded in little indian
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
@@ -82,8 +65,7 @@ function mkPubkeyHashReplayScript (
     zopcodes.OP_CHECKSIG +
     zbufferutils.getPushDataLength(blockHashHex) +
     blockHashHex +
-    zbufferutils.getPushDataLength(blockHeightHex) +
-    blockHeightHex +
+	serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
 }
@@ -103,13 +85,6 @@ function mkScriptHashReplayScript (
   var addrHex = bs58check.decode(address).toString('hex')
   var subAddrHex = addrHex.substring(4, addrHex.length) // Cut out the '00' (we also only want 14 bytes instead of 16)
 
-  var blockHeightBuffer = Buffer.alloc(4)
-  blockHeightBuffer.writeUInt32LE(blockHeight, 0)
-  if (blockHeightBuffer[3] === 0x00) {
-    blockHeightBuffer = blockHeightBuffer.slice(0, 3)
-  }
-  var blockHeightHex = blockHeightBuffer.toString('hex')
-
   // Block hash is encoded in little indian
   var blockHashHex = Buffer.from(blockHash, 'hex').reverse().toString('hex')
 
@@ -120,10 +95,32 @@ function mkScriptHashReplayScript (
     zopcodes.OP_EQUAL +
     zbufferutils.getPushDataLength(blockHashHex) +
     blockHashHex +
-    zbufferutils.getPushDataLength(blockHeightHex) +
-    blockHeightHex +
+    serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
+}
+
+/*
+ * Given a block height serialize it as ScriptNum for including into Script
+ * @param {Number} blockHeight
+ * return {String} Hex representation of ScriptNum
+ */
+function serializeScriptBlockHeight(blockHeight: number): string {
+  // check for scriptNum special case values
+  if(blockHeight >= -1 && blockHeight <= 16) {
+	var res = 0
+	if(blockHeight == -1 || (blockHeight >= 1 && blockHeight <= 16))
+	  res = blockHeight + (zopcodes.OP_1 - 1)
+	else if(blockHeight == 0)
+	  res = zopcodes.OP_0
+	return res.toString()
+  }
+  else {
+	// Minimal encoding
+	var blockHeightBuffer = zbufferutils.scriptNumEncode(blockHeight);
+    var blockHeightHex = blockHeightBuffer.toString('hex')
+	return zbufferutils.getPushDataLength(blockHeightHex) + blockHeightHex
+  }
 }
 
 /*
@@ -196,9 +193,10 @@ function signatureForm (
 /*
  * Deserializes a hex string into a TXOBJ
  * @param {String} hex string
+ * @param {Boolean} specify if we have prevScriptPubKey field defined inside inputs
  * @return {Object} txOBJ
  */
-function deserializeTx (hexStr: string): TXOBJ {
+function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): TXOBJ {
   const buf = Buffer.from(hexStr, 'hex')
   var offset = 0
 
@@ -220,6 +218,16 @@ function deserializeTx (hexStr: string): TXOBJ {
     const vout = buf.readUInt32LE(offset)
     offset += 4
 
+	var prevScriptPubKey = ""
+
+	if(withPrevScriptPubKey) {
+	  const prevScriptPubKeyLen = varuint.decode(buf, offset)
+	  offset += varuint.decode.bytes
+
+      prevScriptPubKey = buf.slice(offset, offset + prevScriptPubKeyLen)
+      offset += prevScriptPubKeyLen
+	}
+
     const scriptLen = varuint.decode(buf, offset)
     offset += varuint.decode.bytes
 
@@ -233,7 +241,7 @@ function deserializeTx (hexStr: string): TXOBJ {
       output: { hash: hash.reverse().toString('hex'), vout: vout },
       script: script.toString('hex'),
       sequence: sequence,
-      prevScriptPubKey: ''
+      prevScriptPubKey: prevScriptPubKey.toString('hex')
     })
   }
 
@@ -266,9 +274,10 @@ function deserializeTx (hexStr: string): TXOBJ {
 /*
  * Serializes a TXOBJ into hex string
  * @param {Object} txObj
+ * @param {Boolean} specify if we have prevScriptPubKey field defined inside inputs
  * return {String} hex string of txObj
  */
-function serializeTx (txObj: TXOBJ): string {
+function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): string {
   var serializedTx = ''
   var _buf16 = Buffer.alloc(4)
 
@@ -283,6 +292,12 @@ function serializeTx (txObj: TXOBJ): string {
     _buf16.writeUInt16LE(i.output.vout, 0)
     serializedTx += Buffer.from(i.output.hash, 'hex').reverse().toString('hex')
     serializedTx += _buf16.toString('hex')
+
+	if(withPrevScriptPubKey) {
+	  // Doesn't work for length > 253 ....
+	  serializedTx += zbufferutils.getPushDataLength(i.prevScriptPubKey)
+	  serializedTx += i.prevScriptPubKey
+	}
 
     // Script Signature
     // Doesn't work for length > 253 ....
