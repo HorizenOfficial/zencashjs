@@ -65,7 +65,7 @@ function mkPubkeyHashReplayScript (
     zopcodes.OP_CHECKSIG +
     zbufferutils.getPushDataLength(blockHashHex) +
     blockHashHex +
-	serializeScriptBlockHeight(blockHeight) +
+    serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
   )
 }
@@ -108,18 +108,18 @@ function mkScriptHashReplayScript (
 function serializeScriptBlockHeight(blockHeight: number): string {
   // check for scriptNum special case values
   if(blockHeight >= -1 && blockHeight <= 16) {
-	var res = 0
-	if(blockHeight == -1 || (blockHeight >= 1 && blockHeight <= 16))
-	  res = blockHeight + (zopcodes.OP_1 - 1)
-	else if(blockHeight == 0)
-	  res = zopcodes.OP_0
-	return res.toString()
-  }
-  else {
-	// Minimal encoding
-	var blockHeightBuffer = zbufferutils.scriptNumEncode(blockHeight);
+    var res = 0
+    if(blockHeight == -1 || (blockHeight >= 1 && blockHeight <= 16)) {
+      res = blockHeight + (zopcodes.OP_1 - 1)
+    } else if (blockHeight == 0) {
+      res = zopcodes.OP_0
+    }
+    return res.toString()
+  } else {
+    // Minimal encoding
+    var blockHeightBuffer = zbufferutils.scriptNumEncode(blockHeight);
     var blockHeightHex = blockHeightBuffer.toString('hex')
-	return zbufferutils.getPushDataLength(blockHeightHex) + blockHeightHex
+    return zbufferutils.getPushDataLength(blockHeightHex) + blockHeightHex
   }
 }
 
@@ -218,15 +218,15 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
     const vout = buf.readUInt32LE(offset)
     offset += 4
 
-	var prevScriptPubKey = ""
+    var prevScriptPubKey = ""
 
-	if(withPrevScriptPubKey) {
-	  const prevScriptPubKeyLen = varuint.decode(buf, offset)
-	  offset += varuint.decode.bytes
+    if(withPrevScriptPubKey) {
+      const prevScriptPubKeyLen = varuint.decode(buf, offset)
+      offset += varuint.decode.bytes
 
       prevScriptPubKey = buf.slice(offset, offset + prevScriptPubKeyLen)
       offset += prevScriptPubKeyLen
-	}
+    }
 
     const scriptLen = varuint.decode(buf, offset)
     offset += varuint.decode.bytes
@@ -293,11 +293,11 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     serializedTx += Buffer.from(i.output.hash, 'hex').reverse().toString('hex')
     serializedTx += _buf16.toString('hex')
 
-	if(withPrevScriptPubKey) {
-	  // Doesn't work for length > 253 ....
-	  serializedTx += zbufferutils.getPushDataLength(i.prevScriptPubKey)
-	  serializedTx += i.prevScriptPubKey
-	}
+    if(withPrevScriptPubKey) {
+      // Doesn't work for length > 253 ....
+      serializedTx += zbufferutils.getPushDataLength(i.prevScriptPubKey)
+      serializedTx += i.prevScriptPubKey
+    }
 
     // Script Signature
     // Doesn't work for length > 253 ....
