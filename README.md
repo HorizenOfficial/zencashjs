@@ -63,6 +63,52 @@ var tx0 = zencashjs.transaction.signTx(txobj, 0, '2c3a48576fe6e8a466e78cd2957c9d
 // 01000000017bcf4c3b7f0c24667e1e14e1cb7136633bd31dd0219a68cc522ad234ec736119000000008b483045022100b69baff0eb5570fd8ddda7b180463035d47eb3b1c07a808a68085fd58e9e22b102202eb3983a2137af4f8c3967b3c6c16c024ad952a712ab92b8911a8797f1864d3d0141048a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2e4d234528ff87b83f971ab2b12cd2939ff33c7846716827a5b0e8233049d8aadffffffff01a0860100000000003f76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b400000000
 
 // You can now do zen-cli sendrawtransaction `SERIALIZED_TRANSACTION`
+
+// To serialize and deserialize an unsigned raw transaction for signing on a separate machine, 'prevScriptPubKey' can be
+// encoded in the raw transaction by passing 'true' as a second optional parameter to serializeTx/deserializeTx.
+// Take note that the final signed transaction has to be serialized with serializeTx(tx, false).
+
+// Default serializeTx/deserializeTx setting 'prevScriptPubKey' to '':
+zencashjs.transaction.deserializeTx(zencashjs.transaction.serializeTx(txobj))
+// {
+//   version: 1,
+//   locktime: 0,
+//   ins: [
+//     {
+//       output: [Object],
+//       script: '',
+//       sequence: 'ffffffff',
+//       prevScriptPubKey: ''
+//     }
+//   ],
+//   outs: [
+//     {
+//       satoshis: 100000,
+//       script: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac200206260143838b5ff52dc2eb7b4b8099d4e4c99dc3ef19794289a2cd4c10070000b4'
+//     }
+//   ]
+// }
+
+// serializeTx/deserializeTx with 2nd argument 'true' keeping 'prevScriptPubKey':
+zencashjs.transaction.deserializeTx(zencashjs.transaction.serializeTx(txobj, true), true)
+// {
+//   version: 1,
+//   locktime: 0,
+//   ins: [
+//     {
+//       output: [Object],
+//       script: '',
+//       sequence: 'ffffffff',
+//       prevScriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
+//     }
+//   ],
+//   outs: [
+//     {
+//       satoshis: 100000,
+//       script: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac200206260143838b5ff52dc2eb7b4b8099d4e4c99dc3ef19794289a2cd4c10070000b4'
+//     }
+//   ]
+// }
 ```
 
 # Example Usage (Multi-sig)
