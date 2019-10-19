@@ -56,10 +56,42 @@ function getPushDataLength (s: string): string {
   return numToVarInt(hexLength)
 }
 
+// https://github.com/bitcoinjs/bitcoinjs-lib/blob/0d10a4d68e79ebe41a191c68f9b1b58e95716e34/src/script_number.js
+function scriptNumSize(i) {
+  return i > 0x7fffffff
+    ? 5
+    : i > 0x7fffff
+    ? 4
+    : i > 0x7fff
+    ? 3
+    : i > 0x7f
+    ? 2
+    : i > 0x00
+    ? 1
+    : 0;
+}
+function scriptNumEncode(_number) {
+  let value = Math.abs(_number);
+  const size = scriptNumSize(value);
+  const buffer = Buffer.allocUnsafe(size);
+  const negative = _number < 0;
+  for (let i = 0; i < size; ++i) {
+    buffer.writeUInt8(value & 0xff, i);
+    value >>= 8;
+  }
+  if (buffer[size - 1] & 0x80) {
+    buffer.writeUInt8(negative ? 0x80 : 0x00, size - 1);
+  } else if (negative) {
+    buffer[size - 1] |= 0x80;
+  }
+  return buffer;
+}
+
 module.exports = {
   readUInt64LE: readUInt64LE,
   writeUInt64LE: writeUInt64LE,
   getPushDataLength: getPushDataLength,
   numToVarInt: numToVarInt,
-  numToBytes: numToBytes
+  numToBytes: numToBytes,
+  scriptNumEncode: scriptNumEncode
 }
