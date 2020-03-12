@@ -4,5 +4,7 @@ module.exports = {
   zaddress: require('./zaddress'),
   crypto: require('./crypto'),
   transaction: require('./transaction'),
-  bufferutils: require('./bufferutils')
+  bufferutils: require('./bufferutils'),
+  message: require('./message'),
+
 }
