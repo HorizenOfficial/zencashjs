@@ -27,15 +27,17 @@ function hash160 (buffer: Buffer): string {
   return hash160
 }
 
-function sha256Buf (buffer) {
+function sha256Buf (buffer: Buffer): Buffer{
   return createHash('sha256')
     .update(buffer)
     .digest()
 }
-function hash256Buf (buffer) {
+
+function hash256Buf (buffer: Buffer): Buffer {
   return sha256Buf(sha256Buf(buffer))
 }
-function hash160Buf (buffer) {
+
+function hash160Buf (buffer: Buffer): Buffer {
   return createHash('ripemd160')
     .update(sha256Buf(buffer))
     .digest()
