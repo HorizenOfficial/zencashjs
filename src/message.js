@@ -13,7 +13,7 @@ const varuint = require('varuint-bitcoin')
  */
 function sign(message: string, privateKey: string, compressed: Boolean, sigOptions) :string {
   let { extraEntropy } = sigOptions || {}
-  const hash = _magicHash(message, false)
+  const hash = _magicHash(message)
   const sigObj = secp256k1.sign(hash, Buffer.from(privateKey, 'hex'), { data: extraEntropy })
   return encodeSignature(
     sigObj.signature,
@@ -33,7 +33,7 @@ function sign(message: string, privateKey: string, compressed: Boolean, sigOptio
 function verify(message: string, zenAddress: string, signature: string|Buffer) : Boolean {
   if (!Buffer.isBuffer(signature)) signature = Buffer.from(signature, 'base64')
   const parsed = decodeSignature(signature)
-  const hash = _magicHash(message, false)
+  const hash = _magicHash(message)
   const publicKey = secp256k1.recover(
     hash,
     parsed.signature,
