@@ -27,10 +27,29 @@ function hash160 (buffer: Buffer): string {
   return hash160
 }
 
+function sha256Buf (buffer: Buffer): Buffer{
+  return createHash('sha256')
+    .update(buffer)
+    .digest()
+}
+
+function hash256Buf (buffer: Buffer): Buffer {
+  return sha256Buf(sha256Buf(buffer))
+}
+
+function hash160Buf (buffer: Buffer): Buffer {
+  return createHash('ripemd160')
+    .update(sha256Buf(buffer))
+    .digest()
+}
+
 module.exports = {
   hash160: hash160,
   ripemd160: ripemd160,
   sha1: sha1,
   sha256: sha256,
-  sha256x2: sha256x2
+  sha256x2: sha256x2,
+  sha256x2: sha256x2,
+  hash256Buf: hash256Buf,
+  hash160Buf: hash160Buf
 }
