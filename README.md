@@ -209,6 +209,47 @@ var Zaddress = zencashjs.zaddress.mkZAddress(a_pk, pk_enc)
 // zcTPZR8Hqz2ZcStwMJju9L4VBHW7YWmNyL6tDAT4eVmzmxLaG7h4QmqUXfmrjz8twizH4piDGiRYJRZ1bhHhT5gFL6TKsQZ
 ```
 
+# Example usage (Sign/Verify message)
+```javascript
+var zencashjs = require('zencashjs')
+
+var priv = zencashjs.address.mkPrivKey('chris p. bacon, defender of the guardians')
+// 2c3a48576fe6e8a466e78cd2957c9dc62128135540bbea0685d7c4a23ea35a6c
+
+var privWIF = zencashjs.address.privKeyToWIF(priv)
+// 5J9mKPd531Tk4A73kKp4iowoi6EvhEp8QSMAVzrZhuzZkdpYbK8
+
+var pubKey = zencashjs.address.privKeyToPubKey(priv, true) // generate compressed pubKey
+// 038a789e0910b6aa314f63d2cc666bd44fa4b71d7397cb5466902dc594c1a0a0d2
+
+var zAddr = zencashjs.address.pubKeyToAddr(pubKey)
+// znnjppzJG7ajT7f6Vp1AD6SjgcXBVPA2E6c
+
+var message = 'ciao'
+
+/**
+ * Will sign a message with a given zen private key.
+ *
+ * @param {string} message - The message to be signed
+ * @param {string} privateKey - A private key
+ * @param {Boolean} compressed
+ * @returns {Buffer} The signature
+ */
+var signature = zencashjs.message.sign(message, priv, true)
+// signature.toString('base64')
+// IC7SPUlfyjKjG7hrrPWc6WTsm79ksjHAYXSFmjlGwAL9SSvAIvpYmOm3U5CzG2k0QBxDYuzpltw+UAET3J8e7Gg=
+
+/**
+ * Validate a signature against a given zend address.
+ *
+ * @param {String} message - the message to verify
+ * @param {String} zenAddress - A zen address
+ * @param {String|Buffer} signature - A base64 encoded compact signature
+ * @returns {Boolean} true if the signature is valid
+ */
+var verification = zencashjs.message.verify(message, zAddr, signature)
+ // true
+```
 
 # Development guide (more to come..)
 ```bash
