@@ -3,7 +3,7 @@
 var prf = require('./prf')
 var address = require('./address')
 var bs58check = require('bs58check')
-var sodium = require('libsodium-wrappers-sumo')
+var { scalarMult } = require('tweetnacl')
 var zconfig = require('./config')
 
 /*
@@ -53,7 +53,7 @@ function zSecretKeyToTransmissionKey (a_sk: string): string {
   sk_enc[32] &= 127
   sk_enc[31] |= 64
 
-  return Buffer.from(sodium.crypto_scalarmult_base(sk_enc)).toString('hex')
+  return Buffer.from(scalarMult.base(sk_enc)).toString('hex')
 }
 
 /*
