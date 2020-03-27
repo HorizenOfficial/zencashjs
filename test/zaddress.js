@@ -1,6 +1,7 @@
 var zencashjs = require('..')
 var chai = require('chai')
 var expect = chai.expect
+var testData = require('./data/zaddress_testdata')
 
 it('mkZSecretKey() should be deterministic', function () {
   var z_secretKey = zencashjs.zaddress.mkZSecretKey(
@@ -30,12 +31,14 @@ it('zSecretToPayingKey() should be deterministic', function () {
 })
 
 it('zSecretToTransmissionKey() should be deterministic', function () {
-  var pk_enc = zencashjs.zaddress.zSecretKeyToTransmissionKey(
-    '0c10a61a669bc4a51000c4c74ff58c151912889891089f7bae5e4994a73af7a8'
-  )
-  expect(pk_enc).to.equal(
-    '22d666c34ababacf6a9a4a752cc7870b505b64e85638aa45d23ac32992397960'
-  )
+  testData.keys.forEach(element => {
+    var pk_enc = zencashjs.zaddress.zSecretKeyToTransmissionKey(
+      element.zSecretkey
+    )
+    expect(pk_enc).to.equal(
+      element.pk
+    )
+  });
 })
 
 it('mkZAddress() should be deterministic', function () {
