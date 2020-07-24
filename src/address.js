@@ -78,7 +78,7 @@ function pubKeyToAddr (pubKey: string, pubKeyHash: string = zconfig.mainnet.pubK
  * @return {String} RedeemScript
  */
 function mkMultiSigRedeemScript (pubKeys: [string], M: number, N: number): string {
-  // https://github.com/ZencashOfficial/zen/blob/b7a7c4c4199f5e9f49868631fe5f2f6de6ba4f9a/src/script/standard.cpp#L411
+  // https://github.com/HorizenOfficial/zen/blob/b7a7c4c4199f5e9f49868631fe5f2f6de6ba4f9a/src/script/standard.cpp#L411
   if ((M > N) && (M <= 1)) throw new Error('Invalid Multi Sig Type')
   const OP_1 = Buffer.from(zopcodes.OP_1, 'hex')
   const OP_START = (OP_1.readInt8(0) + (M - 1)).toString(16)

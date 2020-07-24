@@ -1,6 +1,6 @@
 
 /* Useful OP codes for the scripting language
- * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/script.h
+ * Obtained from: https://github.com/HorizenOfficial/zen/blob/master/src/script/script.h
  */
 
 module.exports = {
