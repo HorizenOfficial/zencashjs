@@ -1,5 +1,5 @@
 // @flow
-import type { TXOBJ, HISTORY, RECIPIENTS } from './types'
+import type { TXOBJ, HISTORY, RECIPIENTS, SC_CREATION, SC_FORWARD_TRANSFER } from './types'
 
 var bs58check = require('bs58check')
 var elliptic = require('elliptic')
@@ -282,14 +282,24 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
   var _buf16 = Buffer.alloc(4)
 
   // Version
-  _buf16.writeUInt16LE(txObj.version, 0)
+  if (txObj.version == -4) {
+    _buf16.writeInt32LE(txObj.version, 0);
+  }
+  else {
+    _buf16.writeUInt16LE(txObj.version, 0);
+  }
   serializedTx += _buf16.toString('hex')
 
   // History
   serializedTx += zbufferutils.numToVarInt(txObj.ins.length)
   txObj.ins.map((i) => {
     // Txids and vouts
-    _buf16.writeUInt16LE(i.output.vout, 0)
+    if(txObj.version == -4) {
+      _buf16.writeUInt32LE(i.output.vout, 0);
+    }
+    else {
+      _buf16.writeUInt16LE(i.output.vout, 0);
+    }
     serializedTx += Buffer.from(i.output.hash, 'hex').reverse().toString('hex')
     serializedTx += _buf16.toString('hex')
 
@@ -307,7 +317,6 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     // Sequence
     serializedTx += i.sequence
   })
-
   // Outputs
   serializedTx += zbufferutils.numToVarInt(txObj.outs.length)
   txObj.outs.map((o) => {
@@ -326,8 +335,36 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     serializedTx += o.script
   })
 
+  // Write sidechains params
+  if(txObj.version == -4) {
+    // Write vsc size
+    serializedTx += zbufferutils.numToVarInt(txObj.vsc_ccout.length);
+    // Write every vsc
+    for (var i = 0; i < txObj.vsc_ccout.length; i++) {
+      var _buf32 = Buffer.alloc(12); // Satoshis
+      _buf32.writeInt32LE(txObj.vsc_ccout[i].epoch_length, 0);
+      _buf32.writeInt32LE(txObj.vsc_ccout[i].amount & -1, 4);
+      serializedTx += _buf32.toString('hex');
+      serializedTx += Buffer.from(txObj.vsc_ccout[i].address, 'hex').reverse().toString('hex');
+      serializedTx += zbufferutils.getPushDataLength(txObj.vsc_ccout[i].customData)
+      serializedTx += txObj.vsc_ccout[i].customData;
+      serializedTx += zbufferutils.getPushDataLength(txObj.vsc_ccout[i].constant)
+      serializedTx += txObj.vsc_ccout[i].constant;
+      serializedTx += txObj.vsc_ccout[i].wCertVk;
+    }
+    // Write vft size
+    serializedTx += zbufferutils.numToVarInt(txObj.vft_ccout.length);
+    // Write every vft
+    for (var i = 0; i < txObj.vft_ccout.length; i++) {
+      var _buf32 = Buffer.alloc(8); // Satoshis
+      _buf32.writeInt32LE(txObj.vft_ccout[i].amount & -1, 0);
+      serializedTx += _buf32.toString('hex');
+      serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
+      serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
+    }
+  }
   // Locktime
-  _buf16.writeUInt16LE(txObj.locktime, 0)
+  _buf16.writeUInt32LE(txObj.locktime, 0);
   serializedTx += _buf16.toString('hex')
 
   return serializedTx
@@ -345,9 +382,11 @@ function createRawTx (
   history: HISTORY[],
   recipients: RECIPIENTS[],
   blockHeight: number,
-  blockHash: string
+  blockHash: string,
+  vsc: SC_CREATION[],
+  vft: SC_FORWARD_TRANSFER[]
 ): TXOBJ {
-  var txObj = { locktime: 0, version: 1, ins: [], outs: [] }
+  var txObj = { locktime: 0, version: (vsc || vft) ? -4 : 1, ins: [], outs: [] }
 
   txObj.ins = history.map(function (h) {
     return {
@@ -363,7 +402,12 @@ function createRawTx (
       satoshis: o.satoshis
     }
   })
-
+  if(vsc) {
+    txObj.vsc_ccout = vsc
+  }
+  if(vft) {
+    txObj.vft_ccout = vft
+  }
   return txObj
 }
 
@@ -520,13 +564,13 @@ function applyMultiSignatures (
   // const signaturesFixed = pubKeys.map(pubKey => {
   //   const keyPair = secp256k1.keyFromPublic(pubKey)
 
-  //   var match    
+  //   var match
 
   //   unmatched.some((sig, i) => {
-  //     if (!sig) return false      
+  //     if (!sig) return false
   //   })
   // })
-  
+
   var redeemScriptPushDataLength = zbufferutils.getPushDataLength(redeemScript)
 
   // Lmao no idea, just following the source code
