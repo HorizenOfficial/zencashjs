@@ -1,6 +1,6 @@
 {
   "name": "zencashjs",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Dead easy to use Horizen JavaScript based library",
   "main": "./lib/index.js",
   "repository": "https://github.com/HorizenOfficial/zencashjs",
