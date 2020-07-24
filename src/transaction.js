@@ -345,7 +345,11 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       _buf32.writeInt32LE(txObj.vsc_ccout[i].epoch_length, 0);
       _buf32.writeInt32LE(txObj.vsc_ccout[i].amount & -1, 4);
       serializedTx += _buf32.toString('hex');
-      serializedTx += Buffer.from(txObj.vsc_ccout[i].address, 'hex').reverse().toString('hex');
+      var address = txObj.vsc_ccout[i].address;
+      if(address.length < 64) {
+        address += "0".repeat(64-address.length);
+      }
+      serializedTx += Buffer.from(address, 'hex').reverse().toString('hex');
       serializedTx += zbufferutils.getPushDataLength(txObj.vsc_ccout[i].customData)
       serializedTx += txObj.vsc_ccout[i].customData;
       serializedTx += zbufferutils.getPushDataLength(txObj.vsc_ccout[i].constant)
@@ -359,7 +363,11 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       var _buf32 = Buffer.alloc(8); // Satoshis
       _buf32.writeInt32LE(txObj.vft_ccout[i].amount & -1, 0);
       serializedTx += _buf32.toString('hex');
-      serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
+      var address = txObj.vft_ccout[i].address;
+      if(address.length < 64) {
+        address += "0".repeat(64-address.length);
+      }
+      serializedTx += Buffer.from(address, 'hex').reverse().toString('hex');
       serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
     }
   }
