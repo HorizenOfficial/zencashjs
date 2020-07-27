@@ -1,6 +1,6 @@
 module.exports = {
   /* SIGHASH Codes
-   * Obtained from: https://github.com/ZencashOfficial/zen/blob/master/src/script/interpreter.h
+   * Obtained from: https://github.com/HorizenOfficial/zen/blob/master/src/script/interpreter.h
    */
   SIGHASH_ALL: 1,
   SIGHASH_NONE: 2,

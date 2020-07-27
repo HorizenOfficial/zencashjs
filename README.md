@@ -1,4 +1,4 @@
-# zencashjs ![build status](https://api.travis-ci.org/ZencashOfficial/zencashjs.svg?branch=master)
+# zencashjs ![build status](https://api.travis-ci.org/HorizenOfficial/zencashjs.svg?branch=master)
 Dead simple and easy to use JavaScript based library for zencash. Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
 
 # Example usage (Transparent address)
@@ -256,7 +256,7 @@ var verification = zencashjs.message.verify(message, zAddr, signature)
 # src is where the source code resides.
 # lib is where the transpiled code resides in.
 # edit src if you wanna make a PR
-git clone https://github.com/ZencashOfficial/zencashjs.git
+git clone https://github.com/HorizenOfficial/zencashjs.git
 cd zencashjs
 npm install
 npm run [dev | build | test]

@@ -1,9 +1,9 @@
 {
   "name": "zencashjs",
-  "version": "1.2.4",
-  "description": "Dead easy to use Zencash JavaScript based library",
+  "version": "1.2.5",
+  "description": "Dead easy to use Horizen JavaScript based library",
   "main": "./lib/index.js",
-  "repository": "https://github.com/ZencashOfficial/zencashjs",
+  "repository": "https://github.com/HorizenOfficial/zencashjs",
   "author": "Kendrick Tan <kendricktan0814@gmail.com>",
   "license": "MIT",
   "dependencies": {
