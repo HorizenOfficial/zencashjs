@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
-npm run-script build
+echo Checking if ./lib is in sync with ./src...
+npm run-script build >/dev/null
 DIFF=$(git diff --name-only)
-[[ -n ${DIFF} ]] && exit 1
+[[ -n ${DIFF} ]] && echo FAIL && exit 1
+echo OK
