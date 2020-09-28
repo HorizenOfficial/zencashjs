@@ -13,3 +13,5 @@ node_js:
 
 cache:
   npm: false
+
+before_install: scripts/check-build.sh
