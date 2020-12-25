@@ -5,23 +5,24 @@ describe('scripts/check-lib-sync.sh', () => {
     const addTemporaryChange = dir => execSync(`touch ${dir}/tmp.js && git add --intent-to-add ${dir}/tmp.js`)
     const revertTemporaryChange = dir => execSync(`git reset ${dir}/tmp.js && rm ${dir}/tmp.js`)
     
-    it('runs successfully when there are no changes between the current and main branches', done => {
+    it('runs successfully when there are no changes', done => {
         exec('scripts/check-lib-sync.sh', error => {
             expect(error).to.equal(null)
             done()
         })
     })
 
-    it('runs successfully when ./lib is in sync with ./src', done => {
-        ['src', 'lib'].forEach(dir => addTemporaryChange(dir))
+    it('runs successfully when changes in ./lib are in sync with ./src', done => {
+        const dirs = ['src', 'lib']
+        dirs.forEach(dir => addTemporaryChange(dir))
         exec('scripts/check-lib-sync.sh', error => {
-            ['src', 'lib'].forEach(dir => revertTemporaryChange(dir))
+            dirs.forEach(dir => revertTemporaryChange(dir))
             expect(error).to.equal(null)
             done()
         })
     })
 
-    it('errors when ./lib is not in sync with ./src', done => {
+    it('errors when changes in ./lib are not in sync with ./src', done => {
         addTemporaryChange('src')
         exec('scripts/check-lib-sync.sh', error => {
             revertTemporaryChange('src')
