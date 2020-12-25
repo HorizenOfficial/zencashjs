@@ -28,18 +28,12 @@
     "eslint-plugin-node": "^9.2.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "mocha": "^7.1.1",
-    "husky": "^4.3.0"
+    "mocha": "^7.1.1"
   },
   "scripts": {
     "build": "babel src/ -d lib/",
     "dev": "babel --watch src/ -d lib/",
     "clean": "rm -rf ./lib && mkdir lib",
     "test": "mocha"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run-script build && git add --all lib"
-    }
   }
 }
