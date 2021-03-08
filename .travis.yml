@@ -13,3 +13,5 @@ node_js:
 
 cache:
   npm: false
+
+before_script: TARGET_BRANCH=$TRAVIS_BRANCH scripts/check-lib-sync.sh
