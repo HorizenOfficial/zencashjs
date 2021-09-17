@@ -1,19 +1,15 @@
 // @flow
 
 export type TXOBJ = {
-  nLockTime: number,
-  version: number, 
-  inputs: {
-    prevTxId: string,
-    sequenceNumber: string,
-    outputIndex: number,
-    script: string, // check
-    prevScriptPubKey: string, // check
-  }[],
-  outputs: { 
+  locktime: number,
+  version: number,
+  ins: {
+    output: { hash: string, vout: number },
     script: string,
-    satoshis: number 
+    sequence: string,
+    prevScriptPubKey: string,
   }[],
+  outs: { script: string, satoshis: number }[],
   joinsplit?: {}[], // Does ZencashJS support shielded txn?
   sc_params?: {
     vsc_ccout: {
@@ -55,10 +51,16 @@ export type TXOBJ = {
 export type CERTIFICATE_OBJ = {
   hash: string,
   version: number,
-  inputs: {
-    prevTxId: string,
-    sequenceNumber: string,
-    outputIndex: number 
+  ins: {
+    output: { hash: string, vout: number },
+    script: string,
+    sequence: string,
+    prevScriptPubKey: string,
+  }[],
+  outs: { 
+    script: string, 
+    satoshis: number, 
+    isFromBackwardTransfer: boolean 
   }[],
   sidechainId: string,
   epochNumber: number,
@@ -69,12 +71,6 @@ export type CERTIFICATE_OBJ = {
   vBitVectorCertificateField: string[],
   ftScFee: number,
   mbtrScFee: number,
-  outputs: { 
-    script: string,
-    satoshis: number,
-    isFromBackwardTransfer: boolean,
-    pubKeyHash: string
-  }[],
 }
 
 // HISTORY Structure
