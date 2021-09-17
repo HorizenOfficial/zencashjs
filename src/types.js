@@ -57,7 +57,6 @@ export type TXOBJ = {
     ftScFee: number,
     mbtrScFee: number,
   }
-  }
 }
 
 // HISTORY Structure
