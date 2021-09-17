@@ -9,11 +9,10 @@ export type TXOBJ = {
     sequence: string,
     prevScriptPubKey: string,
   }[],
-  outs: { script: string, satoshis: number }[],
-  joinsplit?: {}[], // Does ZencashJS support shielded txn?
+  outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean }[],
   sc_params?: {
     vsc_ccout: {
-      epoch_length: number,
+      epochLength: number,
       satoshis: number,
       address: string,
       customData: string,
@@ -27,7 +26,8 @@ export type TXOBJ = {
     vft_ccout: {
       scid: string,
       satoshis: number,
-      address: string
+      address: string,
+      mcReturnAddress: string
     }[],
     vcsw_ccin: {
       value: number,
@@ -41,36 +41,23 @@ export type TXOBJ = {
     }[],
     vmbtr_out: {
       scid: string,
-      scFee: string,
+      scFee: number,
       mcDestinationAddress: string,
       vScRequestData: string[]
     }[],
   },
-}
-
-export type CERTIFICATE_OBJ = {
-  hash: string,
-  version: number,
-  ins: {
-    output: { hash: string, vout: number },
-    script: string,
-    sequence: string,
-    prevScriptPubKey: string,
-  }[],
-  outs: { 
-    script: string, 
-    satoshis: number, 
-    isFromBackwardTransfer: boolean 
-  }[],
-  sidechainId: string,
-  epochNumber: number,
-  quality: number,
-  endEpochCumScTxCommTreeRoot: number,
-  scProof: string,
-  vFieldElementCertificateField: string[],
-  vBitVectorCertificateField: string[],
-  ftScFee: number,
-  mbtrScFee: number,
+  cert?: {
+    sidechainId: string,
+    epochNumber: number,
+    quality: number,
+    endEpochCumScTxCommTreeRoot: number,
+    scProof: string,
+    vFieldElementCertificateField: string[],
+    vBitVectorCertificateField: string[],
+    ftScFee: number,
+    mbtrScFee: number,
+  }
+  }
 }
 
 // HISTORY Structure
