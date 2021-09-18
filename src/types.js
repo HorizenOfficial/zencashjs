@@ -1,7 +1,7 @@
 // @flow
 
 export type TXOBJ = {
-  locktime: number,
+  locktime?: number,
   version: number,
   ins: {
     output: { hash: string, vout: number },
