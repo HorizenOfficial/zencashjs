@@ -24,7 +24,7 @@ export type TXOBJ = {
       mbtrRequestDataLength: number
     }[],
     vft_ccout: {
-      scid: string,
+      scId: string,
       satoshis: number,
       address: string,
       mcReturnAddress: string
@@ -40,7 +40,7 @@ export type TXOBJ = {
       pubKeyHash: string
     }[],
     vmbtr_out: {
-      scid: string,
+      scId: string,
       scFee: number,
       mcDestinationAddress: string,
       vScRequestData: string[]
@@ -50,7 +50,7 @@ export type TXOBJ = {
     sidechainId: string,
     epochNumber: number,
     quality: number,
-    endEpochCumScTxCommTreeRoot: number,
+    endEpochCumScTxCommTreeRoot: string,
     scProof: string,
     vFieldElementCertificateField: string[],
     vBitVectorCertificateField: string[],
