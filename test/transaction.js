@@ -272,7 +272,7 @@ it('addressToScript should be deterministic for both P2SH and P2PKH on mainnet a
   expect(zencashjs.transaction.addressToScript(addr3, blockHeight, blockHash, '')).to.equal('76a914ab523674d9f2ed5a0b300aeb072fc09801363f9f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b4');
 })
 
-it('transaction.deserializeTx should properly deseralize certificate (transactions with version = -5)', function() {
+it('deserializeTx() should properly deserialize certificate (transactions with version = -5)', function() {
   certificateTestData.forEach(certificate => {
     const expected_txobj = formatCertificate(certificate.json);
     const txobj_deserialized = zencashjs.transaction.deserializeTx(certificate.hex);

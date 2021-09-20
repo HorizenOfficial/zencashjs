@@ -221,7 +221,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
 
     const endEpochCumScTxCommTreeRootLen = varuint.decode(buf, offset);
     offset += varuint.decode.bytes
-    const endEpochCumScTxCommTreeRoot = buf.slice(offset, offset + endEpochCumScTxCommTreeRootLen).toString('hex'); //come back to this one
+    const endEpochCumScTxCommTreeRoot = buf.slice(offset, offset + endEpochCumScTxCommTreeRootLen).toString('hex');
     offset += endEpochCumScTxCommTreeRootLen
 
     const scProofLen = varuint.decode(buf, offset);
@@ -337,11 +337,8 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
       const satoshis = zbufferutils.readUInt64LE(buf, offset)
       offset += 8
   
-      const scriptLen = varuint.decode(buf, offset)
-      offset += varuint.decode.bytes
-  
-      const script = buf.slice(offset, offset + scriptLen)
-      offset += scriptLen
+      const script = buf.slice(offset, offset + 20)
+      offset += 20
       
       txObj.outs.push({
         satoshis,
