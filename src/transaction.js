@@ -210,7 +210,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
 
   // Certificate
   if (version === -5) {
-    const sidechainId = buf.slice(offset, offset + 32).reverse().toString('hex');
+    const scId = buf.slice(offset, offset + 32).reverse().toString('hex');
     offset += 32
 
     const epochNumber = buf.readInt32LE(offset);
@@ -258,7 +258,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
     offset += 8; 
     
     txObj.cert = {
-      sidechainId,
+      scId,
       epochNumber,
       quality,
       endEpochCumScTxCommTreeRoot,
@@ -342,9 +342,9 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   
       const script = buf.slice(offset, offset + scriptLen)
       offset += scriptLen
-  
+      
       txObj.outs.push({
-        satoshis: satoshis,
+        satoshis,
         script: script.toString('hex'), // check if this is the same
         isFromBackwardTransfer: true
       })
@@ -352,9 +352,9 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   }
 
   if (version != -5) {
-  // Locktime
-  txObj.locktime = buf.readInt32LE(offset)
-  offset += 4
+    // Locktime
+    txObj.locktime = buf.readInt32LE(offset)
+    offset += 4
   }
 
   return txObj
