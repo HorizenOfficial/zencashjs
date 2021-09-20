@@ -10,8 +10,8 @@ export type TXOBJ = {
     prevScriptPubKey: string,
   }[],
   outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean }[],
-  sc_params?: {
-    vsc_ccout: {
+  scParams?: {
+    scCcout: {
       epochLength: number,
       satoshis: number,
       address: string,
@@ -23,13 +23,13 @@ export type TXOBJ = {
       mainchainBackwardTransferScFee: number,
       mbtrRequestDataLength: number
     }[],
-    vft_ccout: {
+    ftCcout: {
       scId: string,
       satoshis: number,
       address: string,
       mcReturnAddress: string
     }[],
-    vcsw_ccin: {
+    cswCcin: {
       value: number,
       scId: string,
       nullifer: string,
@@ -39,7 +39,7 @@ export type TXOBJ = {
       redeemScript: string,
       pubKeyHash: string
     }[],
-    vmbtr_out: {
+    mbtrOut: {
       scId: string,
       scFee: number,
       mcDestinationAddress: string,
