@@ -208,6 +208,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   txObj.version = version;
   offset += 4
 
+
   // Certificate
   if (version === -5) {
     const scId = buf.slice(offset, offset + 32).reverse().toString('hex');
@@ -337,13 +338,14 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
       const satoshis = zbufferutils.readUInt64LE(buf, offset)
       offset += 8
   
-      const script = buf.slice(offset, offset + 20)
+      const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
       offset += 20
       
       txObj.outs.push({
         satoshis,
-        script: script.toString('hex'), // check if this is the same
-        isFromBackwardTransfer: true
+        script: 'script', // check if this is the same
+        isFromBackwardTransfer: true,
+        pubKeyHash,
       })
     }
   }

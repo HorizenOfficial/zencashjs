@@ -30,7 +30,7 @@ function formatCertificate (txJson) {
         formattedOutput.push({
             script: output.scriptPubKey.hex,
             satoshis: output.valueZat,
-            ... ( output['backward transfer'] && {isFromBackwardTransfer: output['backward transfer']})
+            ... ( output['backward transfer'] && {isFromBackwardTransfer: output['backward transfer'], pubKeyHash: output.pubkeyhash})
         })
     });
     txObj.outs = formattedOutput;
