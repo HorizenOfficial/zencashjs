@@ -27,7 +27,7 @@ export type TXOBJ = {
       mbtrRequestDataLength: number
     }[],
     vft_ccout: {
-      scId: string,
+      scid: string,
       satoshis: number,
       address: string,
       mcReturnAddress: string
@@ -43,7 +43,7 @@ export type TXOBJ = {
       pubKeyHash: string
     }[],
     vmbtr_out: {
-      scId: string,
+      scid: string,
       scFee: number,
       mcDestinationAddress: string,
       vScRequestData: string[]
