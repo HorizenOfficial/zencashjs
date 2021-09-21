@@ -29,7 +29,8 @@ export type TXOBJ = {
     vft_ccout: {
       scId: string,
       satoshis: number,
-      address: string
+      address: string,
+      mcReturnAddress: string
     }[],
     vcsw_ccin: {
       value: number,
