@@ -1,5 +1,6 @@
 // @flow
 
+// Shape for sc_params and cert should stay consistent with Zendoo and bitcore-lib-zen
 export type TXOBJ = {
   locktime?: number,
   version: number,
@@ -9,27 +10,28 @@ export type TXOBJ = {
     sequence: string,
     prevScriptPubKey: string,
   }[],
-  outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean }[],
-  scParams?: {
-    scCcout: {
-      epochLength: number,
+  outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean, pubKeyHash?: string }[],
+  sc_params?: {
+    vsc_ccout: {
+      epoch_length: number,
       satoshis: number,
       address: string,
       customData: string,
-      wCertVk: string,
+      certVk: string,
+      constantData: string,
+      wCeasedVk: string,
       vFieldElementCertificateFieldConfig: number[],
       vBitVectorCertificateFieldConfig: number[][],
       forwardTransferScFee: number,
       mainchainBackwardTransferScFee: number,
       mbtrRequestDataLength: number
     }[],
-    ftCcout: {
+    vft_ccout: {
       scId: string,
       satoshis: number,
-      address: string,
-      mcReturnAddress: string
+      address: string
     }[],
-    cswCcin: {
+    vcsw_ccin: {
       value: number,
       scId: string,
       nullifer: string,
@@ -39,7 +41,7 @@ export type TXOBJ = {
       redeemScript: string,
       pubKeyHash: string
     }[],
-    mbtrOut: {
+    vmbtr_out: {
       scId: string,
       scFee: number,
       mcDestinationAddress: string,
@@ -47,7 +49,7 @@ export type TXOBJ = {
     }[],
   },
   cert?: {
-    scId: string,
+    sidechainId: string,
     epochNumber: number,
     quality: number,
     endEpochCumScTxCommTreeRoot: string,
