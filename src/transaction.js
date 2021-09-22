@@ -204,7 +204,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   var txObj = { version: 0, locktime: 0, ins: [], outs: [] }
 
   // Version
-  txObj.version = buf.readUInt32LE(offset)
+  txObj.version = buf.readInt32LE(offset)
   offset += 4
 
   // Vins
