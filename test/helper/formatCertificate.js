@@ -5,14 +5,13 @@ module.exports = function formatCertificate (txJson) {
     const  { scid, ...cert } = txJson.cert
 
     txObj.cert = {
-        ...cert, ...{
-            sidechainId: txJson.cert.scid,
-            ftScFee: txJson.cert.ftScFee * 100000000,
-            mbtrScFee: txJson.cert.mbtrScFee * 100000000
-        }
+        ...cert, 
+        sidechainId: txJson.cert.scid,
+        ftScFee: txJson.cert.ftScFee * 100000000,
+        mbtrScFee: txJson.cert.mbtrScFee * 100000000
     }
 
-    let formattedInput = [];
+    const formattedInput = [];
     txJson.vin.forEach(input => {
         formattedInput.push({
             output: { hash: input.txid, vout: input.vout }, 
@@ -23,7 +22,7 @@ module.exports = function formatCertificate (txJson) {
     });
     txObj.ins = formattedInput;
 
-    let formattedOutput = [];
+    const formattedOutput = [];
     txJson.vout.forEach(output => {
         formattedOutput.push({
             script: output.scriptPubKey.hex,
