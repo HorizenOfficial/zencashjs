@@ -1,12 +1,12 @@
-function formatCertificate (txJson) {
+module.exports = function formatCertificate (txJson) {
     var txObj = {};
     txObj.version = txJson.version;
 
-    const  { scid, ...formattedCert } = txJson.cert
+    const  { scid, ...cert } = txJson.cert
 
     txObj.cert = {
-        ...formattedCert, ...{
-            scId: txJson.cert.scid,
+        ...cert, ...{
+            sidechainId: txJson.cert.scid,
             ftScFee: txJson.cert.ftScFee * 100000000,
             mbtrScFee: txJson.cert.mbtrScFee * 100000000
         }
@@ -38,8 +38,4 @@ function formatCertificate (txJson) {
 
     return txObj
 } 
-
-module.exports = {
-    formatCertificate: formatCertificate
-}
 

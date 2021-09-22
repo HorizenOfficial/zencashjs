@@ -2,7 +2,7 @@ var zencashjs = require('..')
 var chai = require('chai')
 var expect = chai.expect
 var certificateTestData = require('./data/certificate_testdata')
-var {formatCertificate} = require('./helper/formatCertificate')
+var formatCertificate = require('./helper/formatCertificate')
 
 it('serializeTx() and desrializeTx() should be deterministic', function () {
   const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
@@ -279,6 +279,4 @@ it('deserializeTx() should properly deserialize certificate (transactions with v
   
     expect(txobj_deserialized).to.deep.equal(expected_txobj);
   })
-
-  
 })

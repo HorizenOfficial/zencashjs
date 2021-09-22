@@ -202,7 +202,7 @@ function signatureForm (
 }
 
 function deserializeCertFields (buf: Buffer, offset: number) {
-  const scId = buf.slice(offset, offset + 32).reverse().toString('hex');
+  const sidechainId = buf.slice(offset, offset + 32).reverse().toString('hex');
   offset += 32
 
   const epochNumber = buf.readInt32LE(offset);
@@ -250,7 +250,7 @@ function deserializeCertFields (buf: Buffer, offset: number) {
   offset += 8;
   
   const cert = {
-    scId,
+    sidechainId,
     epochNumber,
     quality,
     endEpochCumScTxCommTreeRoot,
@@ -321,7 +321,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   offset += 4
 
   // Certificate
-  if (version === -5) {
+  if (version === zconstants.TX_VERSION_CERTIFICATE) {
     const [ cert, newOffset ] = deserializeCertFields(buf, offset);
     txObj.cert = cert;
     offset = newOffset;
@@ -372,19 +372,19 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   offset = newOffset;
 
   // Backward transfer outputs
-  if (version === -5) {
+  if (version === zconstants.TX_VERSION_CERTIFICATE) {
     const [ btOutputs, newOffset ] = deserializeVout(buf, offset, true);
     txObj.outs = txObj.outs.concat(btOutputs)
     offset = newOffset;
   }
 
-  if (version != -5) {
+  if (version != zconstants.TX_VERSION_CERTIFICATE) {
     // Locktime
     txObj.locktime = buf.readInt32LE(offset)
     offset += 4
   }
 
-  return txObj
+  return txObj;
 }
 
 /*
