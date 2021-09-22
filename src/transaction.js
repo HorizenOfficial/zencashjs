@@ -100,6 +100,17 @@ function mkScriptHashReplayScript (
   )
 }
 
+function mkReplayScript(pubKeyHash: string): string {
+  return (
+    zopcodes.OP_DUP + 
+    zopcodes.OP_HASH160 + 
+    zbufferutils.getPushDataLength(pubKeyHash) + 
+    Buffer.from(pubKeyHash, 'hex').reverse().toString('hex') + 
+    zopcodes.OP_EQUALVERIFY + 
+    zopcodes.OP_CHECKSIG
+  )
+}
+
 /*
  * Given a block height serialize it as ScriptNum for including into Script
  * @param {Number} blockHeight
@@ -188,6 +199,45 @@ function signatureForm (
   }
 
   return newTx
+}
+
+function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: boolean) {
+  let outputs = [];
+
+  var voutLen = varuint.decode(buf, offset)
+  offset += varuint.decode.bytes
+  for (let i = 0; i < voutLen; i++) {
+    const satoshis = zbufferutils.readUInt64LE(buf, offset)
+    offset += 8
+
+    if (!isFromBackwardTransfer) {
+      const scriptLen = varuint.decode(buf, offset)
+      offset += varuint.decode.bytes
+  
+      const script = buf.slice(offset, offset + scriptLen).toString('hex')
+      offset += scriptLen
+
+      outputs.push({
+        satoshis: satoshis,
+        script: script
+      })
+    } else {
+      const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
+      offset += 20
+
+      const script = mkReplayScript(pubKeyHash);
+      
+      outputs.push({
+        satoshis,
+        script, 
+        isFromBackwardTransfer: true,
+        pubKeyHash,
+      })
+    }
+
+  }
+
+  return [outputs, offset]
 }
 
 /*
@@ -310,45 +360,15 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   }
 
   // Vouts
-  var voutLen = varuint.decode(buf, offset)
-  offset += varuint.decode.bytes
-  for (let i = 0; i < voutLen; i++) {
-    const satoshis = zbufferutils.readUInt64LE(buf, offset)
-    offset += 8
-
-    const scriptLen = varuint.decode(buf, offset)
-    offset += varuint.decode.bytes
-
-    const script = buf.slice(offset, offset + scriptLen).toString('hex')
-    offset += scriptLen
-
-    txObj.outs.push({
-      satoshis: satoshis,
-      script: script
-    })
-  }
+  const [ outputs, newOffset ] = deserializeVout(buf, offset, false);
+  txObj.outs = outputs;
+  offset = newOffset;
 
   // Backward transfer outputs
   if (version === -5) {
-    // copied from above.
-    var voutLen = varuint.decode(buf, offset)
-    offset += varuint.decode.bytes
-    for (let i = 0; i < voutLen; i++) {
-      const satoshis = zbufferutils.readUInt64LE(buf, offset)
-      offset += 8
-  
-      const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
-      offset += 20
-
-      const script = zopcodes.OP_DUP + zopcodes.OP_HASH160 + zbufferutils.getPushDataLength(pubKeyHash) + Buffer.from(pubKeyHash, 'hex').reverse().toString('hex') + zopcodes.OP_EQUALVERIFY + zopcodes.OP_CHECKSIG;
-      
-      txObj.outs.push({
-        satoshis,
-        script, 
-        isFromBackwardTransfer: true,
-        pubKeyHash,
-      })
-    }
+    const [ btOutputs, newOffset ] = deserializeVout(buf, offset, true);
+    txObj.outs = txObj.outs.concat(btOutputs)
+    offset = newOffset;
   }
 
   if (version != -5) {

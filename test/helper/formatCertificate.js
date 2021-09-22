@@ -6,9 +6,9 @@ function formatCertificate (txJson) {
 
     txObj.cert = {
         ...formattedCert, ...{
-            scId: formattedCert.scid,
-            ftScFee: formattedCert.ftScFee * 100000000,
-            mbtrScFee: formattedCert.mbtrScFee * 100000000
+            scId: txJson.cert.scid,
+            ftScFee: txJson.cert.ftScFee * 100000000,
+            mbtrScFee: txJson.cert.mbtrScFee * 100000000
         }
     }
 
