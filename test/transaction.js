@@ -278,10 +278,6 @@ it('deserializeTx() should properly deserialize certificate (transactions with v
     const txobj_deserialized = zencashjs.transaction.deserializeTx(certificate.hex);
   
     expect(txobj_deserialized).to.deep.equal(expected_txobj);
-    // expect(txobj_deserialized.cert).to.deep.equal(expected_txobj.cert)
-    // expect(txobj_deserialized.ins).to.deep.equal(expected_txobj.ins)
-    // expect(txobj_deserialized.outs).to.deep.equal(expected_txobj.outs)
-
   })
 
   

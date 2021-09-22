@@ -201,13 +201,12 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   var offset = 0
 
   // Out txobj
-  var txObj = { version: 0, locktime: 0, ins: [], outs: [] }
+  var txObj = { version: 0, ins: [], outs: [] };
 
   // Version
   const version = buf.readInt32LE(offset);
   txObj.version = version;
   offset += 4
-
 
   // Certificate
   if (version === -5) {
@@ -320,12 +319,12 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
     const scriptLen = varuint.decode(buf, offset)
     offset += varuint.decode.bytes
 
-    const script = buf.slice(offset, offset + scriptLen)
+    const script = buf.slice(offset, offset + scriptLen).toString('hex')
     offset += scriptLen
 
     txObj.outs.push({
       satoshis: satoshis,
-      script: script.toString('hex')
+      script: script
     })
   }
 
@@ -340,10 +339,12 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   
       const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
       offset += 20
+
+      const script = zopcodes.OP_DUP + zopcodes.OP_HASH160 + zbufferutils.getPushDataLength(pubKeyHash) + Buffer.from(pubKeyHash, 'hex').reverse().toString('hex') + zopcodes.OP_EQUALVERIFY + zopcodes.OP_CHECKSIG;
       
       txObj.outs.push({
         satoshis,
-        script: 'script', // check if this is the same
+        script, 
         isFromBackwardTransfer: true,
         pubKeyHash,
       })
