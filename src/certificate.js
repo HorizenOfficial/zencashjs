@@ -61,7 +61,7 @@ function deserializeCertFields (buf: Buffer, offset: number) {
       mbtrScFee,
     }
   
-    return [cert, offset]
+    return { cert, offset }
   }
 
   module.exports = {

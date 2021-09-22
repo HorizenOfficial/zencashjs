@@ -237,7 +237,7 @@ function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: b
     }
   }
 
-  return [outputs, offset]
+  return { outputs, offset }
 }
 
 /*
@@ -260,7 +260,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
 
   // Certificate
   if (version === zconstants.TX_VERSION_CERTIFICATE) {
-    const [ cert, newOffset ] = deserializeCertFields(buf, offset);
+    const { cert, offset: newOffset } = deserializeCertFields(buf, offset);
     txObj.cert = cert;
     offset = newOffset;
   }
@@ -305,13 +305,13 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   }
 
   // Vouts
-  const [ outputs, newOffset ] = deserializeVout(buf, offset, false);
+  const { outputs, offset: newOffset } = deserializeVout(buf, offset, false);
   txObj.outs = outputs;
   offset = newOffset;
 
   // Backward transfer outputs
   if (version === zconstants.TX_VERSION_CERTIFICATE) {
-    const [ btOutputs, newOffset ] = deserializeVout(buf, offset, true);
+    const { outputs: btOutputs, offset: newOffset } = deserializeVout(buf, offset, true);
     txObj.outs = txObj.outs.concat(btOutputs)
     offset = newOffset;
   }
