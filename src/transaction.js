@@ -101,7 +101,7 @@ function mkScriptHashReplayScript (
   )
 }
 
-function mkReplayScript(pubKeyHash: string): string {
+function mkPayToPubkeyHashScript(pubKeyHash: string): string {
   return (
     zopcodes.OP_DUP + 
     zopcodes.OP_HASH160 + 
@@ -226,7 +226,7 @@ function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: b
       const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
       offset += 20
 
-      const script = mkReplayScript(pubKeyHash);
+      const script = mkPayToPubkeyHashScript(pubKeyHash);
       
       outputs.push({
         satoshis,

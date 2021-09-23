@@ -16,7 +16,7 @@ module.exports = function formatCertificate (txJson) {
         formattedInput.push({
             output: { hash: input.txid, vout: input.vout }, 
             script: input.scriptSig.hex, 
-            sequence: "ffffffff", // input.sequence?
+            sequence: "ffffffff",
             prevScriptPubKey: ''
         })
     });
