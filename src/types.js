@@ -40,7 +40,9 @@ export type TXOBJ = {
     redeemScript: {
       hex: string
     },
-    pubKeyHash: string
+    scriptPubKey: {
+      hex: string
+    }
   }[],
   vmbtr_out?: {
     scid: string,

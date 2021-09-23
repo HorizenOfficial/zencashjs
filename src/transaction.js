@@ -13,6 +13,7 @@ var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 var { getSidechainParamsFromBuffer } = require('./sidechain')
 var { deserializeCertFields } = require('./certificate')
+var { mkPayToPubkeyHashScript } = require('./transaction-helpers')
 
 function mkNullDataReplayScript (
   data: string,
@@ -99,17 +100,6 @@ function mkScriptHashReplayScript (
     blockHashHex +
     serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
-  )
-}
-
-function mkPayToPubkeyHashScript(pubKeyHash: string): string {
-  return (
-    zopcodes.OP_DUP + 
-    zopcodes.OP_HASH160 + 
-    zbufferutils.getPushDataLength(pubKeyHash) + 
-    Buffer.from(pubKeyHash, 'hex').reverse().toString('hex') + 
-    zopcodes.OP_EQUALVERIFY + 
-    zopcodes.OP_CHECKSIG
   )
 }
 
@@ -319,7 +309,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
 
   if (txObj.version === -4) {
     const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset);
-    txObj.sc_params = scParams;
+    txObj = { ...txObj, ...scParams };
     offset = scParamsOffset;
   }
 

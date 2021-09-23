@@ -1,24 +1,25 @@
 // @flow
-const varuint = require('varuint-bitcoin');
-const { readUInt64LE } = require('./bufferutils');
+var varuint = require('varuint-bitcoin');
+var { readUInt64LE } = require('./bufferutils');
+var { mkPayToPubkeyHashScript } = require('./transaction-helpers');
 
 function getSidechainParamsFromBuffer(buf: Buffer, offset: number) {
-    const [vcsw_ccin, vcsw_ccinOffset] = getCswInputs(buf, offset);
-    const [vsc_ccout, vsc_ccoutOffset] = getScOutputs(buf, vcsw_ccinOffset);
-    const [vft_ccout, vft_ccoutOffset] = getFtOutputs(buf, vsc_ccoutOffset);
-    const [vmbtr_out, vmbtr_outOffset] = getVmbtrOutputs(buf, vft_ccoutOffset);
+    const [vcsw_ccin, vcsw_ccinOffset] = deserializeCswInputs(buf, offset);
+    const [vsc_ccout, vsc_ccoutOffset] = deserializeScOutputs(buf, vcsw_ccinOffset);
+    const [vft_ccout, vft_ccoutOffset] = deserializeFtOutputs(buf, vsc_ccoutOffset);
+    const [vmbtr_out, vmbtr_outOffset] = deserializeMbtrOutputs(buf, vft_ccoutOffset);
 
     const scParams = {
         vcsw_ccin,
         vsc_ccout,
         vft_ccout,
         vmbtr_out
-    }
+    };
 
     return [scParams, vmbtr_outOffset];
 }
 
-function getCswInputs(buf: Buffer, offset: number) {
+function deserializeCswInputs(buf: Buffer, offset: number) {
     const inputs = [];
     const numCsw = varuint.decode(buf, offset)
     offset += varuint.decode.bytes;
@@ -67,20 +68,22 @@ function getCswInputs(buf: Buffer, offset: number) {
             value,
             scId,
             nullifier,
-            pubKeyHash,
+            scriptPubKey: {
+                hex: mkPayToPubkeyHashScript(pubKeyHash)
+            },
             scProof,
             actCertDataHash,
             ceasingCumScTxCommTree,
             redeemScript: {
                 hex: redeemScriptHex
             }
-        })
+        });
     }
 
     return [inputs, offset];
 }
 
-function getScOutputs(buf: Buffer, offset: number) {
+function deserializeScOutputs(buf: Buffer, offset: number) {
     const outputs = [];
     const vFieldElementCertificateFieldConfig = [];
     const vBitVectorCertificateFieldConfig = [];
@@ -146,7 +149,7 @@ function getScOutputs(buf: Buffer, offset: number) {
         for (let i = 0; i < vBitVectorCertificateFieldConfigLength; i++) {
             const bitVector = buf.readUInt32LE(offset);
             const maxCompressedSize = buf.readUInt32LE(offset + 4);
-            vFieldElementCertificateFieldConfig.push([bitVector, maxCompressedSize]);
+            vBitVectorCertificateFieldConfig.push([bitVector, maxCompressedSize]);
             offset += 8;
         }
 
@@ -160,6 +163,7 @@ function getScOutputs(buf: Buffer, offset: number) {
         offset += 1;
 
         outputs.push({
+            n: i,
             withdrawalEpochLength,
             value,
             address,
@@ -172,13 +176,13 @@ function getScOutputs(buf: Buffer, offset: number) {
             ftScFee,
             mbtrScFee,
             mbtrRequestDataLength
-        })
+        });
     }
 
     return [outputs, offset];
 }
 
-function getFtOutputs(buf: Buffer, offset: number) {
+function deserializeFtOutputs(buf: Buffer, offset: number) {
     const outputs = [];
 
     const numVft = varuint.decode(buf, offset)
@@ -198,13 +202,13 @@ function getFtOutputs(buf: Buffer, offset: number) {
            value,
            address,
            scid
-        })
+        });
     }
 
     return [outputs, offset];
 }
 
-function getVmbtrOutputs(buf: Buffer, offset: number) {
+function deserializeMbtrOutputs(buf: Buffer, offset: number) {
     const outputs = [];
 
     const numVmbtr = varuint.decode(buf, offset)
@@ -235,13 +239,14 @@ function getVmbtrOutputs(buf: Buffer, offset: number) {
         offset += 8;
 
         outputs.push({
+            n: i,
             scid,
             vScRequestData,
             mcDestinationAddress: {
                 pubkeyhash: pubKeyHash
             },
             scFee
-        })
+        });
     }
 
     return [outputs, offset];
