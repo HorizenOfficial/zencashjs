@@ -11,6 +11,7 @@ var zcrypto = require('./crypto')
 var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
+var { getSidechainParamsFromBuffer } = require('./sidechain')
 
 function mkNullDataReplayScript (
   data: string,
@@ -262,6 +263,12 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
       satoshis: satoshis,
       script: script.toString('hex')
     })
+  }
+
+  if (txObj.version === -4) {
+    const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset);
+    txObj.sc_params = scParams;
+    offset = scParamsOffset;
   }
 
   // Locktime
