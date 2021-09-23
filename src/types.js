@@ -51,7 +51,7 @@ export type TXOBJ = {
     vScRequestData: string[]
   }[],
   cert?: {
-    sidechainId: string,
+    scid: string,
     epochNumber: number,
     quality: number,
     endEpochCumScTxCommTreeRoot: string,

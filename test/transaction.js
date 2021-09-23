@@ -1,6 +1,8 @@
 var zencashjs = require('..')
 var chai = require('chai')
 var expect = chai.expect
+var certificateTestData = require('./data/certificate_testdata')
+var formatCertificate = require('./helper/formatCertificate')
 
 it('serializeTx() and desrializeTx() should be deterministic', function () {
   const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
@@ -268,4 +270,13 @@ it('addressToScript should be deterministic for both P2SH and P2PKH on mainnet a
   expect(zencashjs.transaction.addressToScript(addr1, blockHeight, blockHash, '')).to.equal('a914ed3f0f01c90f41ff665570d38f070c1ee8c075fe87205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b4');
   expect(zencashjs.transaction.addressToScript(addr2, blockHeight, blockHash, '')).to.equal('76a9143bc25502467ba509b9fb3680148a12b89c56247088ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b4');
   expect(zencashjs.transaction.addressToScript(addr3, blockHeight, blockHash, '')).to.equal('76a914ab523674d9f2ed5a0b300aeb072fc09801363f9f88ac205230ff2fd4a08b46c9708138ba45d4ed480aed088402d81dce274ecf01000000030b2b02b4');
+})
+
+it('deserializeTx() should properly deserialize certificate (transactions with version = -5)', function() {
+  certificateTestData.forEach(certificate => {
+    const expected_txobj = formatCertificate(certificate.json);
+    const txobj_deserialized = zencashjs.transaction.deserializeTx(certificate.hex);
+  
+    expect(txobj_deserialized).to.deep.equal(expected_txobj);
+  })
 })

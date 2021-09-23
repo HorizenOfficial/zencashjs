@@ -12,6 +12,7 @@ var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 var { getSidechainParamsFromBuffer } = require('./sidechain')
+var { deserializeCertFields } = require('./certificate')
 
 function mkNullDataReplayScript (
   data: string,
@@ -98,6 +99,17 @@ function mkScriptHashReplayScript (
     blockHashHex +
     serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
+  )
+}
+
+function mkPayToPubkeyHashScript(pubKeyHash: string): string {
+  return (
+    zopcodes.OP_DUP + 
+    zopcodes.OP_HASH160 + 
+    zbufferutils.getPushDataLength(pubKeyHash) + 
+    Buffer.from(pubKeyHash, 'hex').reverse().toString('hex') + 
+    zopcodes.OP_EQUALVERIFY + 
+    zopcodes.OP_CHECKSIG
   )
 }
 
@@ -191,6 +203,44 @@ function signatureForm (
   return newTx
 }
 
+function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: boolean) {
+  let outputs = [];
+
+  var voutLen = varuint.decode(buf, offset)
+  offset += varuint.decode.bytes
+  for (let i = 0; i < voutLen; i++) {
+    const satoshis = zbufferutils.readUInt64LE(buf, offset)
+    offset += 8
+
+    if (!isFromBackwardTransfer) {
+      const scriptLen = varuint.decode(buf, offset)
+      offset += varuint.decode.bytes
+  
+      const script = buf.slice(offset, offset + scriptLen).toString('hex')
+      offset += scriptLen
+
+      outputs.push({
+        satoshis: satoshis,
+        script: script
+      })
+    } else {
+      const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
+      offset += 20
+
+      const script = mkPayToPubkeyHashScript(pubKeyHash);
+      
+      outputs.push({
+        satoshis,
+        script, 
+        isFromBackwardTransfer: true,
+        pubKeyHash,
+      })
+    }
+  }
+
+  return { outputs, offset }
+}
+
 /*
  * Deserializes a hex string into a TXOBJ
  * @param {String} hex string
@@ -202,15 +252,24 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   var offset = 0
 
   // Out txobj
-  var txObj = { version: 0, locktime: 0, ins: [], outs: [] }
+  var txObj = { version: 0, ins: [], outs: [] };
 
   // Version
-  txObj.version = buf.readInt32LE(offset)
+  const version = buf.readInt32LE(offset);
+  txObj.version = version;
   offset += 4
+
+  // Certificate
+  if (version === zconstants.TX_VERSION_CERTIFICATE) {
+    const { cert, offset: newOffset } = deserializeCertFields(buf, offset);
+    txObj.cert = cert;
+    offset = newOffset;
+  }
 
   // Vins
   var vinLen = varuint.decode(buf, offset)
   offset += varuint.decode.bytes
+
   for (let i = 0; i < vinLen; i++) {
     // Else its
     const hash = buf.slice(offset, offset + 32)
@@ -247,22 +306,15 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   }
 
   // Vouts
-  var voutLen = varuint.decode(buf, offset)
-  offset += varuint.decode.bytes
-  for (let i = 0; i < voutLen; i++) {
-    const satoshis = zbufferutils.readUInt64LE(buf, offset)
-    offset += 8
+  const { outputs, offset: newOffset } = deserializeVout(buf, offset, false);
+  txObj.outs = outputs;
+  offset = newOffset;
 
-    const scriptLen = varuint.decode(buf, offset)
-    offset += varuint.decode.bytes
-
-    const script = buf.slice(offset, offset + scriptLen)
-    offset += scriptLen
-
-    txObj.outs.push({
-      satoshis: satoshis,
-      script: script.toString('hex')
-    })
+  // Backward transfer outputs
+  if (version === zconstants.TX_VERSION_CERTIFICATE) {
+    const { outputs: btOutputs, offset: newOffset } = deserializeVout(buf, offset, true);
+    txObj.outs = txObj.outs.concat(btOutputs)
+    offset = newOffset;
   }
 
   if (txObj.version === -4) {
@@ -271,11 +323,13 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
     offset = scParamsOffset;
   }
 
-  // Locktime
-  txObj.locktime = buf.readInt32LE(offset)
-  offset += 4
+  if (version != zconstants.TX_VERSION_CERTIFICATE) {
+    // Locktime
+    txObj.locktime = buf.readInt32LE(offset)
+    offset += 4
+  }
 
-  return txObj
+  return txObj;
 }
 
 /*
