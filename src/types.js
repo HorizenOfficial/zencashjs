@@ -50,7 +50,7 @@ export type TXOBJ = {
     }[],
   },
   cert?: {
-    sidechainId: string,
+    scid: string,
     epochNumber: number,
     quality: number,
     endEpochCumScTxCommTreeRoot: string,

@@ -2,11 +2,8 @@ module.exports = function formatCertificate (txJson) {
     var txObj = {};
     txObj.version = txJson.version;
 
-    const  { scid, ...cert } = txJson.cert
-
     txObj.cert = {
-        ...cert, 
-        sidechainId: txJson.cert.scid,
+        ...txJson.cert, 
         ftScFee: txJson.cert.ftScFee * 100000000,
         mbtrScFee: txJson.cert.mbtrScFee * 100000000
     }

@@ -2,7 +2,7 @@ var varuint = require('varuint-bitcoin')
 var zbufferutils = require('./bufferutils')
 
 function deserializeCertFields (buf: Buffer, offset: number) {
-    const sidechainId = buf.slice(offset, offset + 32).reverse().toString('hex');
+    const scid = buf.slice(offset, offset + 32).reverse().toString('hex');
     offset += 32
   
     const epochNumber = buf.readInt32LE(offset);
@@ -50,7 +50,7 @@ function deserializeCertFields (buf: Buffer, offset: number) {
     offset += 8;
     
     const cert = {
-      sidechainId,
+      scid,
       epochNumber,
       quality,
       endEpochCumScTxCommTreeRoot,
