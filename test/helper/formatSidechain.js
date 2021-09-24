@@ -8,7 +8,7 @@ module.exports = function formatSidechain (txJson) {
     return { 
       ...i, 
       value: i.value * 1e8, 
-      ftScFee: i.ftScFee * 1e8 ,
+      ftScFee: i.ftScFee * 1e8,
       mbtrScFee: i.mbtrScFee * 1e8
     }
   })
@@ -52,11 +52,7 @@ module.exports = function formatSidechain (txJson) {
   txJson.vout.forEach(output => {
       formattedOutput.push({
           script: output.scriptPubKey.hex,
-          satoshis: output.valueZat,
-          ...(output['backward transfer'] && {
-              isFromBackwardTransfer: output['backward transfer'], 
-              pubKeyHash: output.pubkeyhash
-          })
+          satoshis: output.valueZat
       })
   });
   txObj.outs = formattedOutput;

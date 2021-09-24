@@ -307,7 +307,8 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
     offset = newOffset;
   }
 
-  if (txObj.version === -4) {
+  // Sidechain transaction
+  if (txObj.version === zconstants.TX_VERSION_SIDECHAIN) {
     const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset);
     txObj = { ...txObj, ...scParams };
     offset = scParamsOffset;

@@ -4,8 +4,8 @@ module.exports = function formatCertificate (txJson) {
 
     txObj.cert = {
         ...txJson.cert, 
-        ftScFee: txJson.cert.ftScFee * 100000000,
-        mbtrScFee: txJson.cert.mbtrScFee * 100000000
+        ftScFee: txJson.cert.ftScFee * 1e8,
+        mbtrScFee: txJson.cert.mbtrScFee * 1e8
     }
 
     const formattedInput = [];
