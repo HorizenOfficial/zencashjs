@@ -11,44 +11,47 @@ export type TXOBJ = {
     prevScriptPubKey: string,
   }[],
   outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean, pubKeyHash?: string }[],
-  sc_params?: {
-    vsc_ccout: {
-      epoch_length: number,
-      satoshis: number,
-      address: string,
-      customData: string,
-      certVk: string,
-      constantData: string,
-      wCeasedVk: string,
-      vFieldElementCertificateFieldConfig: number[],
-      vBitVectorCertificateFieldConfig: number[][],
-      forwardTransferScFee: number,
-      mainchainBackwardTransferScFee: number,
-      mbtrRequestDataLength: number
-    }[],
-    vft_ccout: {
-      scid: string,
-      satoshis: number,
-      address: string,
-      mcReturnAddress: string
-    }[],
-    vcsw_ccin: {
-      value: number,
-      scId: string,
-      nullifer: string,
-      scProof: string,
-      actCertDataHash: string,
-      ceasingCumScTxCommTree: string,
-      redeemScript: string,
-      pubKeyHash: string
-    }[],
-    vmbtr_out: {
-      scid: string,
-      scFee: number,
-      mcDestinationAddress: string,
-      vScRequestData: string[]
-    }[],
-  },
+  vsc_ccout?: {
+    withdrawalEpochLength: number,
+    value: number,
+    address: string,
+    customData: string,
+    wCertVk: string,
+    constant: string,
+    wCeasedVk: string,
+    vFieldElementCertificateFieldConfig: number[],
+    vBitVectorCertificateFieldConfig: number[][],
+    ftScFee: number,
+    mbtrScFee: number,
+    mbtrRequestDataLength: number
+  }[],
+  vft_ccout?: {
+    scid: string,
+    value: number,
+    address: string
+  }[],
+  vcsw_ccin?: {
+    value: number,
+    scId: string,
+    nullifer: string,
+    scProof: string,
+    actCertDataHash: string,
+    ceasingCumScTxCommTree: string,
+    redeemScript: {
+      hex: string
+    },
+    scriptPubKey: {
+      hex: string
+    }
+  }[],
+  vmbtr_out?: {
+    scid: string,
+    scFee: number,
+    mcDestinationAddress: {
+      pubkeyhash: string
+    },
+    vScRequestData: string[]
+  }[],
   cert?: {
     scid: string,
     epochNumber: number,

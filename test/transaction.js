@@ -2,7 +2,9 @@ var zencashjs = require('..')
 var chai = require('chai')
 var expect = chai.expect
 var certificateTestData = require('./data/certificate_testdata')
+var sidechainTestData = require('./data/sidechain_testdata')
 var formatCertificate = require('./helper/formatCertificate')
+var formatSidechain = require('./helper/formatSidechain')
 
 it('serializeTx() and desrializeTx() should be deterministic', function () {
   const blockHash = '00000001cf4e27ce1dd8028408ed0a48edd445ba388170c9468ba0d42fff3052'
@@ -276,6 +278,15 @@ it('deserializeTx() should properly deserialize certificate (transactions with v
   certificateTestData.forEach(certificate => {
     const expected_txobj = formatCertificate(certificate.json);
     const txobj_deserialized = zencashjs.transaction.deserializeTx(certificate.hex);
+  
+    expect(txobj_deserialized).to.deep.equal(expected_txobj);
+  })
+})
+
+it('deserializeTx() should properly deserialize sidechain (transactions with version = -4)', function() {
+  sidechainTestData.forEach(sidechain => {
+    const expected_txobj = formatSidechain(sidechain.json);
+    const txobj_deserialized = zencashjs.transaction.deserializeTx(sidechain.hex);
   
     expect(txobj_deserialized).to.deep.equal(expected_txobj);
   })

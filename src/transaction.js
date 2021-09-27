@@ -11,7 +11,9 @@ var zcrypto = require('./crypto')
 var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
+var { getSidechainParamsFromBuffer } = require('./sidechain')
 var { deserializeCertFields } = require('./certificate')
+var { mkPayToPubkeyHashScript } = require('./transaction-helpers')
 
 function mkNullDataReplayScript (
   data: string,
@@ -98,17 +100,6 @@ function mkScriptHashReplayScript (
     blockHashHex +
     serializeScriptBlockHeight(blockHeight) +
     zopcodes.OP_CHECKBLOCKATHEIGHT
-  )
-}
-
-function mkPayToPubkeyHashScript(pubKeyHash: string): string {
-  return (
-    zopcodes.OP_DUP + 
-    zopcodes.OP_HASH160 + 
-    zbufferutils.getPushDataLength(pubKeyHash) + 
-    Buffer.from(pubKeyHash, 'hex').reverse().toString('hex') + 
-    zopcodes.OP_EQUALVERIFY + 
-    zopcodes.OP_CHECKSIG
   )
 }
 
@@ -314,6 +305,13 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
     const { outputs: btOutputs, offset: newOffset } = deserializeVout(buf, offset, true);
     txObj.outs = txObj.outs.concat(btOutputs)
     offset = newOffset;
+  }
+
+  // Sidechain transaction
+  if (txObj.version === zconstants.TX_VERSION_SIDECHAIN) {
+    const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset);
+    txObj = { ...txObj, ...scParams };
+    offset = scParamsOffset;
   }
 
   if (version != zconstants.TX_VERSION_CERTIFICATE) {
