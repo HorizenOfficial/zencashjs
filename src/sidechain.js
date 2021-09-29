@@ -198,10 +198,15 @@ function deserializeFtOutputs(buf: Buffer, offset: number) {
         const scid = buf.slice(offset, offset + 32).reverse().toString('hex');
         offset += 32;
 
+        const mcReturnAddress = buf.slice(offset, offset + 20).reverse().toString('hex');
+        offset += 20;
+
         outputs.push({
            value,
            address,
-           scid
+           scid,
+           mcReturnAddress,
+           n: i
         });
     }
 
