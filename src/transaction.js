@@ -237,7 +237,11 @@ function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: b
  * @param {Boolean} specify if we have prevScriptPubKey field defined inside inputs
  * @return {Object} txOBJ
  */
-function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): TXOBJ {
+function deserializeTx (
+  hexStr: string, 
+  withPrevScriptPubKey: boolean = false, 
+  envPubKeyHash: string = zconfig.mainnet.pubKeyHash
+): TXOBJ {
   const buf = Buffer.from(hexStr, 'hex')
   var offset = 0
 
@@ -309,7 +313,7 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
 
   // Sidechain transaction
   if (txObj.version === zconstants.TX_VERSION_SIDECHAIN) {
-    const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset);
+    const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset, envPubKeyHash);
     txObj = { ...txObj, ...scParams };
     offset = scParamsOffset;
   }

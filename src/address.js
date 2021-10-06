@@ -60,13 +60,25 @@ function WIFToPrivKey (wifPk: string): string {
 /*
  * Converts public key to zencash address
  * @param {String} pubKey (public key)
- * @param {String} pubKeyHash (public key hash (optional, else use defaul))
+ * @param {String} envPubKeyHash (public key hash (optional, else use defaul))
  * @return {String} zencash address
  */
-function pubKeyToAddr (pubKey: string, pubKeyHash: string = zconfig.mainnet.pubKeyHash): string {
+function pubKeyToAddr (pubKey: string, envPubKeyHash: string = zconfig.mainnet.pubKeyHash): string {
   const hash160 = zcrypto.hash160(Buffer.from(pubKey, 'hex'))
   return bs58check
-    .encode(Buffer.from(pubKeyHash + hash160, 'hex'))
+    .encode(Buffer.from(envPubKeyHash + hash160, 'hex'))
+    .toString('hex')
+}
+
+/*
+ * Converts public key hash to zencash address
+ * @param {String} pubKeyHash (public key hash)
+ * @param {String} envPubKeyHash (public key hash (optional, else use defaul))
+ * @return {String} zencash address
+ */
+function pubKeyHashToAddr (pubKeyHash: string, envPubKeyHash: string = zconfig.mainnet.pubKeyHash): string {
+  return bs58check
+    .encode(Buffer.from(envPubKeyHash + pubKeyHash, 'hex'))
     .toString('hex')
 }
 
@@ -105,6 +117,7 @@ module.exports = {
   privKeyToWIF: privKeyToWIF,
   privKeyToPubKey: privKeyToPubKey,
   pubKeyToAddr: pubKeyToAddr,
+  pubKeyHashToAddr: pubKeyHashToAddr,
   WIFToPrivKey: WIFToPrivKey,
   mkMultiSigRedeemScript: mkMultiSigRedeemScript,
   multiSigRSToAddress: multiSigRSToAddress

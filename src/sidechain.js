@@ -1,12 +1,18 @@
 // @flow
 var varuint = require('varuint-bitcoin');
+var zconfig = require('./config')
 var { readUInt64LE } = require('./bufferutils');
 var { mkPayToPubkeyHashScript } = require('./transaction-helpers');
+var { pubKeyHashToAddr } = require('./address');
 
-function getSidechainParamsFromBuffer(buf: Buffer, offset: number) {
+function getSidechainParamsFromBuffer(
+    buf: Buffer, 
+    offset: number, 
+    envPubKeyHash: string = zconfig.mainnet.pubKeyHash
+) {
     const [vcsw_ccin, vcsw_ccinOffset] = deserializeCswInputs(buf, offset);
     const [vsc_ccout, vsc_ccoutOffset] = deserializeScOutputs(buf, vcsw_ccinOffset);
-    const [vft_ccout, vft_ccoutOffset] = deserializeFtOutputs(buf, vsc_ccoutOffset);
+    const [vft_ccout, vft_ccoutOffset] = deserializeFtOutputs(buf, vsc_ccoutOffset, envPubKeyHash);
     const [vmbtr_out, vmbtr_outOffset] = deserializeMbtrOutputs(buf, vft_ccoutOffset);
 
     const scParams = {
@@ -182,7 +188,11 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
     return [outputs, offset];
 }
 
-function deserializeFtOutputs(buf: Buffer, offset: number) {
+function deserializeFtOutputs(
+    buf: Buffer, 
+    offset: number, 
+    envPubKeyHash: string = zconfig.mainnet.pubKeyHash
+) {
     const outputs = [];
 
     const numVft = varuint.decode(buf, offset)
@@ -198,14 +208,14 @@ function deserializeFtOutputs(buf: Buffer, offset: number) {
         const scid = buf.slice(offset, offset + 32).reverse().toString('hex');
         offset += 32;
 
-        const mcReturnAddress = buf.slice(offset, offset + 20).reverse().toString('hex');
+        const mcReturnAddress = buf.slice(offset, offset + 20).toString('hex')
         offset += 20;
 
         outputs.push({
            value,
            address,
            scid,
-           mcReturnAddress,
+           mcReturnAddress: pubKeyHashToAddr(mcReturnAddress, envPubKeyHash),
            n: i
         });
     }
