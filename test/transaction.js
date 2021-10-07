@@ -284,9 +284,11 @@ it('deserializeTx() should properly deserialize certificate (transactions with v
 })
 
 it('deserializeTx() should properly deserialize sidechain (transactions with version = -4)', function() {
+  const { pubKeyHash } = zencashjs.config.testnet;
+  
   sidechainTestData.forEach(sidechain => {
     const expected_txobj = formatSidechain(sidechain.json);
-    const txobj_deserialized = zencashjs.transaction.deserializeTx(sidechain.hex);
+    const txobj_deserialized = zencashjs.transaction.deserializeTx(sidechain.hex, false, pubKeyHash);
   
     expect(txobj_deserialized).to.deep.equal(expected_txobj);
   })

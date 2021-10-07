@@ -124,77 +124,56 @@ module.exports = [
     }
   },
   {
-    "hex": "fcffffff031ddf88e251e5522812a12aa2af5cef2ed59eec250141d598e98ebf57442f4feb000000006a473044022100cbc914d860b2f1a09f549c3c8192b844168f7788b9c2d8b573f0ef700cd9ab8b021f77f14a6bc123b1633b58f9a9bafa9ef24c739f4224813eed4cf33f92cf2260012102ad37508e1120da4612b01fc6220069e93303f8560dc2e30ee9a724c3bda0cc1afffffffff83563b31d92ba46c4a94617b0d18e18e5a69ef451f21b47d4d960d6712b90ae000000006a473044022043989e1e8aff082c8ae2fba40c7a54852326a058c4e2af60d27e63f4b9f5a545022034869191755d2aa0f0df42d9502e41fff54adc388d42130cd8a6f7a062d236e201210352eb53dbd25575853129217e5faabf9f9cd3ebf5ffcebdb87f6a21c5bb39d412ffffffff00a338257e08338740c1b0f6726e3520efa44cebe0f38f1659c826b8db935fbb000000006a473044022029a48587846e5aad1890f2709ad3487357d13491ba6e37b1fa58f980d90bc3e602203015894838d16fd55707fcb8e626a691ddb060af42f36a4d39c4f4f5372451f601210352eb53dbd25575853129217e5faabf9f9cd3ebf5ffcebdb87f6a21c5bb39d412ffffffff0149657d01000000003c76a914872e338a9bb5d81d1603524928b925e16b27aefa88ac20bb1acf2c1fc1228967a611c7db30632098f0c641855180b5fe23793b72eea50d00b400000200ab9041000000008a50be94b35f7483e22f00544f5f9311348862f24d49a3338d5cdc7196dcad8ab71d5f3ced4eae11b292caff3d6d20577b761589f0cf5fcb6f3902ef221b1f2f00a3e111000000008a50be94b35f7483e22f00544f5f9311348862f24d49a3338d5cdc7196dcad8ae19529efc63e2cc86b0934b87172dac8b7d36a09b67ef7b63e3ddedcb2f3fa310000000000",
-    "description": "Multiple FT creation",
+    "hex": "fcffffff016a9f20bb17123b09f75843bb57e9c57e403da9012abb73514fefcde044b1c1d5010000006b483045022100d9552cc4b4d5264f6cf4a0baa084ac6c2dfeff3a4ce25046ade659bb197e9110022001a93e791118fd8656a2b469e5ea152417e66799b1b983d9b1c8ae1bfc4e6c45012102e901987dc9574c8ac6bae531d4f826df694860c909a7561b06663960615393a4ffffffff012487380c010000003e76a9145e787a59cc9c90776c53edb1e04122b177a94aa588ac206c81ad40df8e6cc60c7ae8a2ccd0831f1bacc0e37feafd3bae98e136d9f1520902df00b40000010065cd1d000000008a50be94b35f7483e22f00544f5f9311348862f24d49a3338d5cdc7196dcad8a8efd40b8b16abaafb12abbfe81fe4bb413643100cbcc34908e300cc87213200461160e5d7857ab7477f7a77799cc3beba1bb21580000000000",
+    "description": "FT creation",
     "json": {
-      "txid": "62091923e9805a8650d752b3b83e0d56ce70e775ee67c080feade7e5ee677ad9",
+      "txid": "abe31a6f8330a53ed3c4f0a7ac278fd329336995d52eef984a56762b868cc31d",
       "version": -4,
       "locktime": 0,
       "vin": [
         {
-          "txid": "eb4f2f4457bf8ee998d5410125ec9ed52eef5cafa22aa1122852e551e288df1d",
-          "vout": 0,
+          "txid": "d5c1b144e0cdef4f5173bb2a01a93d407ec5e957bb4358f7093b1217bb209f6a",
+          "vout": 1,
           "scriptSig": {
-            "asm": "3044022100cbc914d860b2f1a09f549c3c8192b844168f7788b9c2d8b573f0ef700cd9ab8b021f77f14a6bc123b1633b58f9a9bafa9ef24c739f4224813eed4cf33f92cf226001 02ad37508e1120da4612b01fc6220069e93303f8560dc2e30ee9a724c3bda0cc1a",
-            "hex": "473044022100cbc914d860b2f1a09f549c3c8192b844168f7788b9c2d8b573f0ef700cd9ab8b021f77f14a6bc123b1633b58f9a9bafa9ef24c739f4224813eed4cf33f92cf2260012102ad37508e1120da4612b01fc6220069e93303f8560dc2e30ee9a724c3bda0cc1a"
+            "asm": "3045022100d9552cc4b4d5264f6cf4a0baa084ac6c2dfeff3a4ce25046ade659bb197e9110022001a93e791118fd8656a2b469e5ea152417e66799b1b983d9b1c8ae1bfc4e6c4501 02e901987dc9574c8ac6bae531d4f826df694860c909a7561b06663960615393a4",
+            "hex": "483045022100d9552cc4b4d5264f6cf4a0baa084ac6c2dfeff3a4ce25046ade659bb197e9110022001a93e791118fd8656a2b469e5ea152417e66799b1b983d9b1c8ae1bfc4e6c45012102e901987dc9574c8ac6bae531d4f826df694860c909a7561b06663960615393a4"
           },
           "sequence": 4294967295
-        },
-        {
-          "txid": "ae902b71d660d9d4471bf251f49ea6e5188ed1b01746a9c446ba921db36335f8",
-          "vout": 0,
-          "scriptSig": {
-            "asm": "3044022043989e1e8aff082c8ae2fba40c7a54852326a058c4e2af60d27e63f4b9f5a545022034869191755d2aa0f0df42d9502e41fff54adc388d42130cd8a6f7a062d236e201 0352eb53dbd25575853129217e5faabf9f9cd3ebf5ffcebdb87f6a21c5bb39d412",
-            "hex": "473044022043989e1e8aff082c8ae2fba40c7a54852326a058c4e2af60d27e63f4b9f5a545022034869191755d2aa0f0df42d9502e41fff54adc388d42130cd8a6f7a062d236e201210352eb53dbd25575853129217e5faabf9f9cd3ebf5ffcebdb87f6a21c5bb39d412"
-          },
-          "sequence": 4294967295
-        },
-        {
-          "txid": "bb5f93dbb826c859168ff3e0eb4ca4ef20356e72f6b0c1408733087e2538a300",
-          "vout": 0,
-          "scriptSig": {
-            "asm": "3044022029a48587846e5aad1890f2709ad3487357d13491ba6e37b1fa58f980d90bc3e602203015894838d16fd55707fcb8e626a691ddb060af42f36a4d39c4f4f5372451f601 0352eb53dbd25575853129217e5faabf9f9cd3ebf5ffcebdb87f6a21c5bb39d412",
-            "hex": "473044022029a48587846e5aad1890f2709ad3487357d13491ba6e37b1fa58f980d90bc3e602203015894838d16fd55707fcb8e626a691ddb060af42f36a4d39c4f4f5372451f601210352eb53dbd25575853129217e5faabf9f9cd3ebf5ffcebdb87f6a21c5bb39d412"
-          },
-          "sequence": 4294967295
-        }
-      ],
-      "vout": [
-        {
-          "value": 0.24995145,
-          "valueZat": 24995145,
-          "n": 0,
-          "scriptPubKey": {
-            "asm": "OP_DUP OP_HASH160 872e338a9bb5d81d1603524928b925e16b27aefa OP_EQUALVERIFY OP_CHECKSIG bb1acf2c1fc1228967a611c7db30632098f0c641855180b5fe23793b72eea50d 0 OP_CHECKBLOCKATHEIGHT",
-            "hex": "76a914872e338a9bb5d81d1603524928b925e16b27aefa88ac20bb1acf2c1fc1228967a611c7db30632098f0c641855180b5fe23793b72eea50d00b4",
-            "reqSigs": 1,
-            "type": "pubkeyhashreplay",
-            "addresses": [
-              "ztfUjL5P7zkzD3gxQf6jWYBKmt6RAZ69qx9"
-            ]
-          }
         }
       ],
       "vcsw_ccin": [
       ],
+      "vout": [
+        {
+          "value": 44.99998500,
+          "valueZat": 4499998500,
+          "n": 0,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 5e787a59cc9c90776c53edb1e04122b177a94aa5 OP_EQUALVERIFY OP_CHECKSIG 6c81ad40df8e6cc60c7ae8a2ccd0831f1bacc0e37feafd3bae98e136d9f15209 223 OP_CHECKBLOCKATHEIGHT",
+            "hex": "76a9145e787a59cc9c90776c53edb1e04122b177a94aa588ac206c81ad40df8e6cc60c7ae8a2ccd0831f1bacc0e37feafd3bae98e136d9f1520902df00b4",
+            "reqSigs": 1,
+            "type": "pubkeyhashreplay",
+            "addresses": [
+              "ztbmUc3GRQUyofgGWqaEboBDjG2RdirBTkP"
+            ]
+          }
+        }
+      ],
       "vsc_ccout": [
       ],
-      "vft_ccout": [{
-          "scid": "2f1f1b22ef02396fcb5fcff08915767b57206d3dffca92b211ae4eed3c5f1db7",
-          "value": 11.00000000,
-          "address": "8aaddc9671dc5c8d33a3494df262883411935f4f54002fe283745fb394be508a"
-        },
+      "vft_ccout": [
         {
-          "scid": "31faf3b2dcde3d3eb6f77eb6096ad3b7c8da7271b834096bc82c3ec6ef2995e1",
-          "value": 3.00000000,
-          "address": "8aaddc9671dc5c8d33a3494df262883411935f4f54002fe283745fb394be508a"
+          "scid": "04201372c80c308e9034cccb00316413b44bfe81febb2ab1afba6ab1b840fd8e",
+          "n": 0,
+          "value": 5.00000000,
+          "address": "8aaddc9671dc5c8d33a3494df262883411935f4f54002fe283745fb394be508a",
+          "mcReturnAddress": "ztc1Jj9WTfti9oqCMp4kpRyaTBkqEdfpdQg"
         }
       ],
       "vmbtr_out": [
       ],
       "vjoinsplit": [
       ]
-
     }
   },
   {
