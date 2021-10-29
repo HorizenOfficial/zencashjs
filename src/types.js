@@ -10,7 +10,11 @@ export type TXOBJ = {
     sequence: string,
     prevScriptPubKey: string,
   }[],
-  outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean, pubKeyHash?: string }[],
+  outs: {
+    script: string,
+    satoshis: number,
+    backwardTransfer?: boolean,
+  }[],
   vsc_ccout?: {
     withdrawalEpochLength: number,
     value: number,
@@ -23,14 +27,14 @@ export type TXOBJ = {
     vBitVectorCertificateFieldConfig: number[][],
     ftScFee: number,
     mbtrScFee: number,
-    mbtrRequestDataLength: number
+    mbtrRequestDataLength: number,
   }[],
   vft_ccout?: {
     scid: string,
     value: number,
     address: string,
     n: number,
-    mcReturnAddress: string
+    mcReturnAddress: string,
   }[],
   vcsw_ccin?: {
     value: number,
@@ -40,19 +44,19 @@ export type TXOBJ = {
     actCertDataHash: string,
     ceasingCumScTxCommTree: string,
     redeemScript: {
-      hex: string
+      hex: string,
     },
     scriptPubKey: {
-      hex: string
-    }
+      hex: string,
+    },
   }[],
   vmbtr_out?: {
     scid: string,
     scFee: number,
     mcDestinationAddress: {
-      pubkeyhash: string
+      pubkeyhash: string,
     },
-    vScRequestData: string[]
+    vScRequestData: string[],
   }[],
   cert?: {
     scid: string,
@@ -64,19 +68,20 @@ export type TXOBJ = {
     vBitVectorCertificateField: string[],
     ftScFee: number,
     mbtrScFee: number,
-  }
-}
+    // totalAmount: number,
+  },
+};
 
 // HISTORY Structure
 export type HISTORY = {
   txid: string,
   vout: number,
   scriptPubKey: string,
-}
+};
 
 // RECIPIENTS Structure
 export type RECIPIENTS = {
   satoshis: number,
   address: string,
-  data: string
-}
+  data: string,
+};
