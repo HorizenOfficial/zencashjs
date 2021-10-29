@@ -24,7 +24,7 @@ export type TXOBJ = {
     ftScFee: number,
     mbtrScFee: number,
     mbtrRequestDataLength: number,
-    // totalAmount: number
+    totalAmount: number
   }[],
   vft_ccout?: {
     scid: string,
