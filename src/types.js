@@ -68,7 +68,7 @@ export type TXOBJ = {
     vBitVectorCertificateField: string[],
     ftScFee: number,
     mbtrScFee: number,
-    // totalAmount: number,
+    totalAmount: number,
   },
 };
 
