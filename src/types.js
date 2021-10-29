@@ -10,7 +10,7 @@ export type TXOBJ = {
     sequence: string,
     prevScriptPubKey: string,
   }[],
-  outs: { script: string, satoshis: number, isFromBackwardTransfer?: boolean, pubKeyHash?: string }[],
+  outs: { script: string, satoshis: number, backwardTransfer?: boolean }[],
   vsc_ccout?: {
     withdrawalEpochLength: number,
     value: number,
@@ -23,7 +23,8 @@ export type TXOBJ = {
     vBitVectorCertificateFieldConfig: number[][],
     ftScFee: number,
     mbtrScFee: number,
-    mbtrRequestDataLength: number
+    mbtrRequestDataLength: number,
+    // totalAmount: number
   }[],
   vft_ccout?: {
     scid: string,

@@ -222,8 +222,7 @@ function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: b
       outputs.push({
         satoshis,
         script, 
-        isFromBackwardTransfer: true,
-        pubKeyHash,
+        backwardTransfer: true,
       })
     }
   }
