@@ -235,6 +235,7 @@ function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: b
  * Deserializes a hex string into a TXOBJ
  * @param {String} hex string
  * @param {Boolean} specify if we have prevScriptPubKey field defined inside inputs
+ * @param {String} hash representing the environment (mainnet/testnet)
  * @return {Object} txOBJ
  */
 function deserializeTx (
