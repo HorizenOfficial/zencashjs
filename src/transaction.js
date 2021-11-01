@@ -12,7 +12,7 @@ var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 var { getSidechainParamsFromBuffer } = require('./sidechain')
-var { deserializeCertFields, getTotalAmount } = require('./certificate')
+var { deserializeCertFields, getTotalBackwardTransferAmount } = require('./certificate')
 var { mkPayToPubkeyHashScript } = require('./transaction-helpers')
 
 function mkNullDataReplayScript (
@@ -309,8 +309,8 @@ function deserializeTx (
     txObj.outs = txObj.outs.concat(btOutputs)
     offset = newOffset;
 
-    const totalAmount = getTotalAmount(btOutputs);
-    txObj.cert = { ...txObj.cert, ...{ totalAmount: totalAmount } };
+    const totalAmount = getTotalBackwardTransferAmount(btOutputs);
+    txObj.cert = { ...txObj.cert, totalAmount };
   }
 
   // Sidechain transaction

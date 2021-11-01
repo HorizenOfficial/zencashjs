@@ -64,17 +64,16 @@ function deserializeCertFields (buf: Buffer, offset: number) {
     return { cert, offset }
   }
 
-  function getTotalAmount(outputs) {
-    var totalAmount = 0;
-    outputs.forEach(function (output) {
-      if (output.backwardTransfer) {
-        totalAmount += output.satoshis;
+  function getTotalBackwardTransferAmount(outputs) {
+    return outputs.reduce((acc, curr) => {
+      if (curr.backwardTransfer) {
+         return acc + curr.satoshis;
       }
-    });
-    return totalAmount;
+      return acc;
+   }, 0)
   }
 
   module.exports = {
     deserializeCertFields: deserializeCertFields,
-    getTotalAmount: getTotalAmount
+    getTotalBackwardTransferAmount: getTotalBackwardTransferAmount
   }
