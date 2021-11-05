@@ -5,7 +5,8 @@ module.exports = function formatCertificate (txJson) {
     txObj.cert = {
         ...txJson.cert, 
         ftScFee: txJson.cert.ftScFee * 1e8,
-        mbtrScFee: txJson.cert.mbtrScFee * 1e8
+        mbtrScFee: txJson.cert.mbtrScFee * 1e8,
+        totalAmount: txJson.cert.totalAmount * 1e8,
     }
 
     const formattedInput = [];
@@ -23,10 +24,9 @@ module.exports = function formatCertificate (txJson) {
     txJson.vout.forEach(output => {
         formattedOutput.push({
             script: output.scriptPubKey.hex,
-            satoshis: output.valueZat,
-            ...(output['backward transfer'] && {
-                isFromBackwardTransfer: output['backward transfer'], 
-                pubKeyHash: output.pubkeyhash
+            satoshis: output.value * 1e8,
+            ...(output.backwardTransfer && {
+                backwardTransfer: output.backwardTransfer
             })
         })
     });

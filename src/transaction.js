@@ -12,7 +12,7 @@ var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
 var { getSidechainParamsFromBuffer } = require('./sidechain')
-var { deserializeCertFields } = require('./certificate')
+var { deserializeCertFields, getTotalBackwardTransferAmount } = require('./certificate')
 var { mkPayToPubkeyHashScript } = require('./transaction-helpers')
 
 function mkNullDataReplayScript (
@@ -222,8 +222,7 @@ function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: b
       outputs.push({
         satoshis,
         script, 
-        isFromBackwardTransfer: true,
-        pubKeyHash,
+        backwardTransfer: true,
       })
     }
   }
@@ -310,6 +309,9 @@ function deserializeTx (
     const { outputs: btOutputs, offset: newOffset } = deserializeVout(buf, offset, true);
     txObj.outs = txObj.outs.concat(btOutputs)
     offset = newOffset;
+
+    const totalAmount = getTotalBackwardTransferAmount(btOutputs);
+    txObj.cert = { ...txObj.cert, totalAmount };
   }
 
   // Sidechain transaction

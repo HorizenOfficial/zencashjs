@@ -52,7 +52,7 @@ module.exports = function formatSidechain (txJson) {
   txJson.vout.forEach(output => {
       formattedOutput.push({
           script: output.scriptPubKey.hex,
-          satoshis: output.valueZat
+          satoshis: output.value * 1e8,
       })
   });
   txObj.outs = formattedOutput;

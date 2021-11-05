@@ -64,6 +64,16 @@ function deserializeCertFields (buf: Buffer, offset: number) {
     return { cert, offset }
   }
 
+  function getTotalBackwardTransferAmount(outputs) {
+    return outputs.reduce((acc, curr) => {
+      if (curr.backwardTransfer) {
+         return acc + curr.satoshis;
+      }
+      return acc;
+   }, 0)
+  }
+
   module.exports = {
-    deserializeCertFields: deserializeCertFields
+    deserializeCertFields: deserializeCertFields,
+    getTotalBackwardTransferAmount: getTotalBackwardTransferAmount
   }
