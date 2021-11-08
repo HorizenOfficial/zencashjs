@@ -3,15 +3,18 @@ os:
 - osx
 - windows
 
-dist: bionic
+dist: focal
 
 language: node_js
 node_js:
-  - lts/dubnium
-  - lts/erbium
-  - node
+  - 10
+  - 12
+  - 14
+  - 16
+  - 17
 
 cache:
   npm: false
 
+before_install: if [ "$(node --version | cut -d "." -f 1 | tr -d "v")" -ge 17 ]; then export NODE_OPTIONS="--openssl-legacy-provider"; fi
 before_script: TARGET_BRANCH=$TRAVIS_BRANCH scripts/check-lib-sync.sh

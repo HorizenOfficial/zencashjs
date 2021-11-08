@@ -1,7 +1,53 @@
 # zencashjs ![build status](https://api.travis-ci.org/HorizenOfficial/zencashjs.svg?branch=master)
 Dead simple and easy to use JavaScript based library for zencash. Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
 
-# Example usage (Transparent address)
+## Migrating from 1.x to 2.x
+Version 2 brings sidechain support and compatibility with Zendoo.  Most functionality and example usage remains identical to Version 1, with the exception of the changes listed below:
+
+### `zencashjs.transaction.deserializeTx` 
+This function now takes a third parameter `envPubKeyHash: string`
+```javascript
+function deserializeTx (
+   hexStr: string,
+   withPrevScriptPubKey: boolean = false,
+   envPubKeyHash: string = zconfig.mainnet.pubKeyHash
+): TXOBJ {}
+```
+ This parameter `envPubKeyHash` is a constant hashed value representing the environment (mainnet/testnet).  These constants are stored on the `zencashjs.config` object.
+
+ For example,
+ ```javascript
+// Testnet
+const testnetTxHex = 'fcff...';
+
+zencashjs.transaction.deserializeTx(
+   testnetTxHex, 
+   false, 
+   zencashjs.config.testnet.pubKeyHash
+);
+
+
+// Mainnet
+const mainnetTxHex = 'fcff...';
+
+zencashjs.transaction.deserializeTx(
+   mainnetTxHex, 
+   false, 
+   zencashjs.config.mainnet.pubKeyHash // Could be omitted, as it defaults to mainnet
+);
+ ```
+
+ ### New Transaction Types
+
+Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.0.pdf) for more details on these transaction types.
+
+See also the updated [TX_OBJ](src/types.js) type delcaration.
+
+> Note: `serializeTx` and `createRawTx` do not yet support the new types, but will in future releases.
+
+
+## Version 1
+### Example usage (Transparent address)
 ```javascript
 var zencashjs = require('zencashjs')
 
@@ -111,7 +157,7 @@ zencashjs.transaction.deserializeTx(zencashjs.transaction.serializeTx(txobj, tru
 // }
 ```
 
-# Example Usage (Multi-sig)
+### Example Usage (Multi-sig)
 ```javascript
 var zencashjs = require('zencashjs')
 
@@ -186,7 +232,7 @@ var serializedTx = zencashjs.transaction.serializeTx(tx0)
 // You can now send the serializedTx using the RPC command sendrawtransaction or through an API like insight
 ```
 
-# Example usage (Private address)
+### Example usage (Private address)
 ```javascript
 var zencashjs = require('zencashjs')
 
@@ -209,7 +255,7 @@ var Zaddress = zencashjs.zaddress.mkZAddress(a_pk, pk_enc)
 // zcTPZR8Hqz2ZcStwMJju9L4VBHW7YWmNyL6tDAT4eVmzmxLaG7h4QmqUXfmrjz8twizH4piDGiRYJRZ1bhHhT5gFL6TKsQZ
 ```
 
-# Example usage (Sign/Verify message)
+### Example usage (Sign/Verify message)
 ```javascript
 var zencashjs = require('zencashjs')
 

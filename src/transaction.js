@@ -11,6 +11,9 @@ var zcrypto = require('./crypto')
 var zconstants = require('./constants')
 var zaddress = require('./address')
 var zopcodes = require('./opcodes')
+var { getSidechainParamsFromBuffer } = require('./sidechain')
+var { deserializeCertFields, getTotalBackwardTransferAmount } = require('./certificate')
+var { mkPayToPubkeyHashScript } = require('./transaction-helpers')
 
 function mkNullDataReplayScript (
   data: string,
@@ -190,26 +193,77 @@ function signatureForm (
   return newTx
 }
 
+function deserializeVout (buf: Buffer, offset: number, isFromBackwardTransfer: boolean) {
+  let outputs = [];
+
+  var voutLen = varuint.decode(buf, offset)
+  offset += varuint.decode.bytes
+  for (let i = 0; i < voutLen; i++) {
+    const satoshis = zbufferutils.readUInt64LE(buf, offset)
+    offset += 8
+
+    if (!isFromBackwardTransfer) {
+      const scriptLen = varuint.decode(buf, offset)
+      offset += varuint.decode.bytes
+  
+      const script = buf.slice(offset, offset + scriptLen).toString('hex')
+      offset += scriptLen
+
+      outputs.push({
+        satoshis: satoshis,
+        script: script
+      })
+    } else {
+      const pubKeyHash = buf.slice(offset, offset + 20).reverse().toString('hex');
+      offset += 20
+
+      const script = mkPayToPubkeyHashScript(pubKeyHash);
+      
+      outputs.push({
+        satoshis,
+        script, 
+        backwardTransfer: true,
+      })
+    }
+  }
+
+  return { outputs, offset }
+}
+
 /*
  * Deserializes a hex string into a TXOBJ
  * @param {String} hex string
  * @param {Boolean} specify if we have prevScriptPubKey field defined inside inputs
+ * @param {String} hash representing the environment (mainnet/testnet)
  * @return {Object} txOBJ
  */
-function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): TXOBJ {
+function deserializeTx (
+  hexStr: string, 
+  withPrevScriptPubKey: boolean = false, 
+  envPubKeyHash: string = zconfig.mainnet.pubKeyHash
+): TXOBJ {
   const buf = Buffer.from(hexStr, 'hex')
   var offset = 0
 
   // Out txobj
-  var txObj = { version: 0, locktime: 0, ins: [], outs: [] }
+  var txObj = { version: 0, ins: [], outs: [] };
 
   // Version
-  txObj.version = buf.readUInt32LE(offset)
+  const version = buf.readInt32LE(offset);
+  txObj.version = version;
   offset += 4
+
+  // Certificate
+  if (version === zconstants.TX_VERSION_CERTIFICATE) {
+    const { cert, offset: newOffset } = deserializeCertFields(buf, offset);
+    txObj.cert = cert;
+    offset = newOffset;
+  }
 
   // Vins
   var vinLen = varuint.decode(buf, offset)
   offset += varuint.decode.bytes
+
   for (let i = 0; i < vinLen; i++) {
     // Else its
     const hash = buf.slice(offset, offset + 32)
@@ -246,29 +300,34 @@ function deserializeTx (hexStr: string, withPrevScriptPubKey: boolean = false): 
   }
 
   // Vouts
-  var voutLen = varuint.decode(buf, offset)
-  offset += varuint.decode.bytes
-  for (let i = 0; i < voutLen; i++) {
-    const satoshis = zbufferutils.readUInt64LE(buf, offset)
-    offset += 8
+  const { outputs, offset: newOffset } = deserializeVout(buf, offset, false);
+  txObj.outs = outputs;
+  offset = newOffset;
 
-    const scriptLen = varuint.decode(buf, offset)
-    offset += varuint.decode.bytes
+  // Backward transfer outputs
+  if (version === zconstants.TX_VERSION_CERTIFICATE) {
+    const { outputs: btOutputs, offset: newOffset } = deserializeVout(buf, offset, true);
+    txObj.outs = txObj.outs.concat(btOutputs)
+    offset = newOffset;
 
-    const script = buf.slice(offset, offset + scriptLen)
-    offset += scriptLen
-
-    txObj.outs.push({
-      satoshis: satoshis,
-      script: script.toString('hex')
-    })
+    const totalAmount = getTotalBackwardTransferAmount(btOutputs);
+    txObj.cert = { ...txObj.cert, totalAmount };
   }
 
-  // Locktime
-  txObj.locktime = buf.readInt32LE(offset)
-  offset += 4
+  // Sidechain transaction
+  if (txObj.version === zconstants.TX_VERSION_SIDECHAIN) {
+    const [scParams, scParamsOffset] = getSidechainParamsFromBuffer(buf, offset, envPubKeyHash);
+    txObj = { ...txObj, ...scParams };
+    offset = scParamsOffset;
+  }
 
-  return txObj
+  if (version != zconstants.TX_VERSION_CERTIFICATE) {
+    // Locktime
+    txObj.locktime = buf.readInt32LE(offset)
+    offset += 4
+  }
+
+  return txObj;
 }
 
 /*
