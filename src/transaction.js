@@ -433,7 +433,8 @@ function createRawTx (
   history: HISTORY[],
   recipients: RECIPIENTS[],
   blockHeight: number,
-  blockHash: string
+  blockHash: string,
+  vft: TXOBJ.vft_ccout
 ): TXOBJ {
   var txObj = { locktime: 0, version: 1, ins: [], outs: [] }
 
@@ -451,6 +452,11 @@ function createRawTx (
       satoshis: o.satoshis
     }
   })
+
+  if (vft) {
+    txObj.version = -4;
+    txObj.vft_ccout = vft;
+  }
 
   return txObj
 }
