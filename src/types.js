@@ -31,7 +31,8 @@ export type TXOBJ = {
     value: number,
     address: string,
     n: number,
-    mcReturnAddress: string
+    mcReturnAddress: string,
+    mcReturnPubKey?: string
   }[],
   vcsw_ccin?: {
     value: number,
