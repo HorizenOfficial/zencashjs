@@ -402,20 +402,16 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       serializedTx += _buf32.toString('hex');
       var address = txObj.vft_ccout[i].address;
 
-      if (address.length < 64) {
-        address += "0".repeat(64 - address.length);
-      }
-
       serializedTx += Buffer.from(address, 'hex').reverse().toString('hex');
       serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
-      serializedTx += Buffer.from(txObj.vft_ccout[i].mcReturnPubKey, 'hex').toString('hex');
+      serializedTx += Buffer.from(txObj.vft_ccout[i].mcReturnAddress, 'hex').toString('hex');
     }
 
     serializedTx += zbufferutils.numToVarInt(0); // Write every mbtr
   }
   
   // Locktime
-  _buf16.writeUInt32LE(txObj.locktime, 0);
+  _buf16.writeInt32LE(txObj.locktime, 0);
   serializedTx += _buf16.toString('hex');
 
   return serializedTx;
@@ -456,6 +452,9 @@ function createRawTx (
   if (vft) {
     txObj.version = -4;
     txObj.vft_ccout = vft;
+    txObj.vsc_ccout = [];
+    txObj.vcsw_ccin = [];
+    txObj.vmbtr_out = [];
   }
 
   return txObj

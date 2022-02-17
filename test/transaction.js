@@ -298,7 +298,7 @@ it("serializeTx() should properly serialize forward transfer transactions", func
   const { hex: expected_tx_hex, json } = sidechainTestData.find(x => x.description === 'MC -> SC Forward Transfer TX')
 
   const txobj_serialized = zencashjs.transaction.serializeTx(
-    formatSidechain(json, true),
+    formatSidechain(json),
     false
   );
 

@@ -1,4 +1,4 @@
-module.exports = function formatSidechain (txJson, useFtMcReturnPubKey = false) {
+module.exports = function formatSidechain (txJson) {
   var txObj = {};
   txObj.version = txJson.version;
   txObj.locktime = txJson.locktime;
@@ -13,22 +13,10 @@ module.exports = function formatSidechain (txJson, useFtMcReturnPubKey = false) 
     }
   })
 
-  if (!useFtMcReturnPubKey) {
-    txObj.vft_ccout = txJson.vft_ccout.map(i => {
-      const { mcReturnPubKey, ...ft } = i;
-      return {
-        ...ft,
-        value: i.value * 1e8
-      }
-    })
-  } else {
-    txObj.vft_ccout = txJson.vft_ccout.map(i => ({
-      ...i,
-      value: i.value * 1e8
-    }))
-  }
-
-
+  txObj.vft_ccout = txJson.vft_ccout.map(i => ({
+    ...i,
+    value: i.value * 1e8
+  }))
 
   txObj.vcsw_ccin = txJson.vcsw_ccin.map(i => ({
     ...i,

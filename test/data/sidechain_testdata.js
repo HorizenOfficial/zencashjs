@@ -57,8 +57,7 @@ module.exports = [
           value: 10,
           address:
             "8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8",
-          mcReturnAddress: "ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL",
-          mcReturnPubKey: 'ec6039c0505e74b8f74fb1e22b77da64d30ce6b3' // pubKey
+          mcReturnAddress: 'ec6039c0505e74b8f74fb1e22b77da64d30ce6b3'
         },
       ],
       vmbtr_out: [],
@@ -123,8 +122,7 @@ module.exports = [
           value: 10,
           address:
             "8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8",
-          mcReturnAddress: "ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL",
-          mcReturnPubKey: 'ec6039c0505e74b8f74fb1e22b77da64d30ce6b3' // pubKey
+          mcReturnAddress: "ec6039c0505e74b8f74fb1e22b77da64d30ce6b3"
         },
       ],
       vmbtr_out: [],

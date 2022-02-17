@@ -215,7 +215,7 @@ function deserializeFtOutputs(
            value,
            address,
            scid,
-           mcReturnAddress: pubKeyHashToAddr(mcReturnAddress, envPubKeyHash),
+           mcReturnAddress,
            n: i
         });
     }
