@@ -398,11 +398,10 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     for (var i = 0; i < txObj.vft_ccout.length; i++) {
       var _buf32 = Buffer.alloc(8); // Satoshis
 
-      _buf32.writeUInt32LE(txObj.vft_ccout[i].value & -1, 0);
+      _buf32 = zbufferutils.writeUInt64LE(_buf32, txObj.vft_ccout[i].value, 0)
       serializedTx += _buf32.toString('hex');
-      var address = txObj.vft_ccout[i].address;
 
-      serializedTx += Buffer.from(address, 'hex').reverse().toString('hex');
+      serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
       serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
       serializedTx += Buffer.from(txObj.vft_ccout[i].mcReturnAddress, 'hex').toString('hex');
     }
