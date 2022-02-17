@@ -380,8 +380,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     var _buf32 = Buffer.alloc(8)
 
     // Satoshis
-    _buf32.writeInt32LE(o.satoshis & -1, 0)
-    _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
+    _buf32 = zbufferutils.writeUInt64LE(_buf32, o.satoshis, 0)
 
     // ScriptPubKey
     serializedTx += _buf32.toString('hex')
