@@ -62,13 +62,53 @@ zencashjs.transaction.deserializeTx(
 );
  ```
 
+### `zencashjs.transaction.createRawTx`
+This function now takes a fifth optional parameter `vft` to be used for a forward transfer transaction
+```javascript
+function createRawTx (
+   history: HISTORY[],
+   recipients: RECIPIENTS[],
+   blockHeight: number,
+   blockHash: string,
+   vft: TXOBJ.vft_ccout
+): TXOBJ {}
+```
+
+### Example forward transfer transaction
+```javascript
+
+// Sending 10 ZEN from address 'ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL' to address '8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8' on sidechain with sidechain id '1a4d5813b260d0cb456c649b005840e1a1eb6eb2e0f98f3af7d201ea1e95d0b8'
+var blockHeight = 937649
+var blockHash = '0002d980065e2bb502a302905ed81229aa467a9502b527a491d7978b970b1ae5'
+
+var txobj = zencashjs.transaction.createRawTx(
+  [{
+      txid: '087faec93611add81dcf0ec31df934248e63c4abde21ee81d65584c7396feb2b', vout: 0,
+      scriptPubKey: '76a914da46f44467949ac9321b16402c32bbeede5e3e5f88ac20ebd78933082d25d56a47d471ee5d57793454cf3d2787f77c21f9964b02000000034f2902b4'
+  }],
+  [{address: 'ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL', satoshis: 297799952794}],
+  blockHeight,
+  blockHash,
+  {
+     scid: "1a4d5813b260d0cb456c649b005840e1a1eb6eb2e0f98f3af7d201ea1e95d0b8",
+      n: 0,
+      value: 10,
+      address: "8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8",
+      mcReturnAddress: "ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL"
+  }
+)
+
+zencashjs.transaction.serializeTx(txobj)
+// fcffffff012beb6f39c78455d681ee21deabc4638e2434f91dc30ecf1dd8ad1136c9ae7f08000000006b483045022100ce8d84a0dde23993c8fe33a11b1cb7da4c8ee152f058de4699ff0cfdc11a3f0902201c39f0e2ba8744b3c98e90b7c86aff82ecf7798731204b0de98fbef81314d7e60121036cda72878f999d49502b29737e7a708dffa4f6198f7cbec18f07ae3874b06a50ffffffff019aa94256450000003f76a914ec6039c0505e74b8f74fb1e22b77da64d30ce6b388ac2082306745a78cbb7256e1780728215be053c55ec7ff99e5abac144a6216170c0003834d0eb400000100ca9a3b00000000c8bdd51c3319d9c3175516569505ba76322405adfc0203dd0b25ee7ed537818db8d0951eea01d2f73a8ff9e0b26eeba1e14058009b646c45cbd060b213584d1aec6039c0505e74b8f74fb1e22b77da64d30ce6b30000000000
+```
+
 ### New Transaction Types
 
 Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.0.pdf) for more details on these transaction types.
 
 See also the updated [TX_OBJ](src/types.js) type declaration.
 
-> Note: `serializeTx` and `createRawTx` do not yet support the new types, but will in future releases.
+> Note: `serializeTx` and `createRawTx` do not yet support all the new types (only forward transfers are supported), but will in future releases.
 
 ## Version 1
 ### Example usage (Transparent address)
