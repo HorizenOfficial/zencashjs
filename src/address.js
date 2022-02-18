@@ -83,6 +83,15 @@ function pubKeyHashToAddr (pubKeyHash: string, envPubKeyHash: string = zconfig.m
 }
 
 /*
+ * Converts zencash address to public key hash
+ * @param {String} zencash address
+ * @return {String} pubKeyHash (public key hash)
+ */
+function addrToPubKeyHash (addr: string): string {
+  return bs58check.decode(addr).toString('hex').slice(4);
+}
+
+/*
  * Given a list of public keys, create a M-of-N redeemscript
  * @param {[String]} pubKey (array of public keys, NOT ADDRESS)
  * @param {Int} M [2 or 3] in M-of-N multisig
@@ -118,6 +127,7 @@ module.exports = {
   privKeyToPubKey: privKeyToPubKey,
   pubKeyToAddr: pubKeyToAddr,
   pubKeyHashToAddr: pubKeyHashToAddr,
+  addrToPubKeyHash: addrToPubKeyHash,
   WIFToPrivKey: WIFToPrivKey,
   mkMultiSigRedeemScript: mkMultiSigRedeemScript,
   multiSigRSToAddress: multiSigRSToAddress

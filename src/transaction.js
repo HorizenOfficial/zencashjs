@@ -1,4 +1,5 @@
 // @flow
+import { addrToPubKeyHash } from './address'
 import type { TXOBJ, HISTORY, RECIPIENTS } from './types'
 
 var bs58check = require('bs58check')
@@ -341,18 +342,21 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
   var _buf16 = Buffer.alloc(4)
 
   // Version
-  _buf16.writeUInt16LE(txObj.version, 0)
+  _buf16.writeInt32LE(txObj.version, 0)
+
   serializedTx += _buf16.toString('hex')
 
   // History
   serializedTx += zbufferutils.numToVarInt(txObj.ins.length)
   txObj.ins.map((i) => {
     // Txids and vouts
-    _buf16.writeUInt16LE(i.output.vout, 0)
+    _buf16.writeUInt32LE(i.output.vout, 0);
+
     serializedTx += Buffer.from(i.output.hash, 'hex').reverse().toString('hex')
+
     serializedTx += _buf16.toString('hex')
 
-    if(withPrevScriptPubKey) {
+    if (withPrevScriptPubKey) {
       // Doesn't work for length > 253 ....
       serializedTx += zbufferutils.getPushDataLength(i.prevScriptPubKey)
       serializedTx += i.prevScriptPubKey
@@ -369,6 +373,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
 
   // Outputs
   serializedTx += zbufferutils.numToVarInt(txObj.outs.length)
+
   txObj.outs.map((o) => {
     // Write 64bit buffers
     // JS only supports 56 bit
@@ -376,8 +381,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     var _buf32 = Buffer.alloc(8)
 
     // Satoshis
-    _buf32.writeInt32LE(o.satoshis & -1, 0)
-    _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
+    _buf32 = zbufferutils.writeUInt64LE(_buf32, o.satoshis, 0)
 
     // ScriptPubKey
     serializedTx += _buf32.toString('hex')
@@ -385,11 +389,33 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     serializedTx += o.script
   })
 
-  // Locktime
-  _buf16.writeUInt16LE(txObj.locktime, 0)
-  serializedTx += _buf16.toString('hex')
+  // Only handles forward transfers at the moment
+  if (txObj.version == -4) {
+    serializedTx += zbufferutils.numToVarInt(0); // Write every csw
+    serializedTx += zbufferutils.numToVarInt(0); // Write every vsc
+    
+    serializedTx += zbufferutils.numToVarInt(txObj.vft_ccout.length); // Write every vft
+    for (var i = 0; i < txObj.vft_ccout.length; i++) {
+      var _buf32 = Buffer.alloc(8); // Satoshis
 
-  return serializedTx
+      _buf32 = zbufferutils.writeUInt64LE(_buf32, txObj.vft_ccout[i].value, 0)
+      serializedTx += _buf32.toString('hex');
+
+      var pubKeyHash = addrToPubKeyHash(txObj.vft_ccout[i].mcReturnAddress);
+
+      serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
+      serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
+      serializedTx += Buffer.from(pubKeyHash, 'hex').toString('hex');
+    }
+
+    serializedTx += zbufferutils.numToVarInt(0); // Write every mbtr
+  }
+  
+  // Locktime
+  _buf16.writeInt32LE(txObj.locktime, 0);
+  serializedTx += _buf16.toString('hex');
+
+  return serializedTx;
 }
 
 /*
@@ -404,7 +430,8 @@ function createRawTx (
   history: HISTORY[],
   recipients: RECIPIENTS[],
   blockHeight: number,
-  blockHash: string
+  blockHash: string,
+  vft: TXOBJ.vft_ccout
 ): TXOBJ {
   var txObj = { locktime: 0, version: 1, ins: [], outs: [] }
 
@@ -422,6 +449,14 @@ function createRawTx (
       satoshis: o.satoshis
     }
   })
+
+  if (vft) {
+    txObj.version = -4;
+    txObj.vft_ccout = vft;
+    txObj.vsc_ccout = [];
+    txObj.vcsw_ccin = [];
+    txObj.vmbtr_out = [];
+  }
 
   return txObj
 }
