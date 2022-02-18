@@ -402,7 +402,6 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       serializedTx += _buf32.toString('hex');
 
       var pubKeyHash = addrToPubKeyHash(txObj.vft_ccout[i].mcReturnAddress);
-      console.log(pubKeyHash)
 
       serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
       serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
