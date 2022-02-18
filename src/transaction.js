@@ -1,4 +1,5 @@
 // @flow
+import { addrToPubKeyHash } from './address'
 import type { TXOBJ, HISTORY, RECIPIENTS } from './types'
 
 var bs58check = require('bs58check')
@@ -400,9 +401,12 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       _buf32 = zbufferutils.writeUInt64LE(_buf32, txObj.vft_ccout[i].value, 0)
       serializedTx += _buf32.toString('hex');
 
+      var pubKeyHash = addrToPubKeyHash(txObj.vft_ccout[i].mcReturnAddress);
+      console.log(pubKeyHash)
+
       serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
       serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
-      serializedTx += Buffer.from(txObj.vft_ccout[i].mcReturnAddress, 'hex').toString('hex');
+      serializedTx += Buffer.from(pubKeyHash, 'hex').toString('hex');
     }
 
     serializedTx += zbufferutils.numToVarInt(0); // Write every mbtr
