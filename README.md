@@ -1,10 +1,35 @@
 # zencashjs ![build status](https://api.travis-ci.org/HorizenOfficial/zencashjs.svg?branch=master)
-Dead simple and easy to use JavaScript based library for zencash. Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
+A javascript library for Node.js. Used in the development of Sphere and other wallets. Implements all non-computationally intensive operations.
+
+#### address.js
+- Create private keys, public keys, and addresses
+- Transform addresses / keys into different formats (WIF)
+
+#### transaction.js
+- Create and sign (non-shielded) transactions (1 input & multiple inputs)
+- Transaction serialization / deserialization
+
+#### message.js
+- Sign and verify messages
+
+#### address.js
+- Create secret key and transform to a spending key, paying key, or transmission key
+- Viewing key is not yet supported
+
+Address / keys prefixes for both mainnet and testnet in config.js.
+
+Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
+
+### Installation
+`npm install zencashjs`
+
+### Usage
+See examples below
 
 ## Migrating from 1.x to 2.x
 Version 2 brings sidechain support and compatibility with Zendoo.  Most functionality and example usage remains identical to Version 1, with the exception of the changes listed below:
 
-### `zencashjs.transaction.deserializeTx` 
+### `zencashjs.transaction.deserializeTx`
 This function now takes a third parameter `envPubKeyHash: string`
 ```javascript
 function deserializeTx (
@@ -21,8 +46,8 @@ function deserializeTx (
 const testnetTxHex = 'fcff...';
 
 zencashjs.transaction.deserializeTx(
-   testnetTxHex, 
-   false, 
+   testnetTxHex,
+   false,
    zencashjs.config.testnet.pubKeyHash
 );
 
@@ -31,20 +56,19 @@ zencashjs.transaction.deserializeTx(
 const mainnetTxHex = 'fcff...';
 
 zencashjs.transaction.deserializeTx(
-   mainnetTxHex, 
-   false, 
+   mainnetTxHex,
+   false,
    zencashjs.config.mainnet.pubKeyHash // Could be omitted, as it defaults to mainnet
 );
  ```
 
- ### New Transaction Types
+### New Transaction Types
 
 Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.0.pdf) for more details on these transaction types.
 
-See also the updated [TX_OBJ](src/types.js) type delcaration.
+See also the updated [TX_OBJ](src/types.js) type declaration.
 
 > Note: `serializeTx` and `createRawTx` do not yet support the new types, but will in future releases.
-
 
 ## Version 1
 ### Example usage (Transparent address)
@@ -64,7 +88,7 @@ var zAddr = zencashjs.address.pubKeyToAddr(pubKey)
 // znnjppzJG7ajT7f6Vp1AD6SjgcXBVPA2E6c
 
 // It is imperative that the block used for bip115BlockHeight and bip115BlockHash has a sufficient number of
-// confirmations (recommded values: 150 to 600 blocks older than current BLOCKHEIGHT). If the block used for 
+// confirmations (recommded values: 150 to 600 blocks older than current BLOCKHEIGHT). If the block used for
 // the replay protection should get orphaned the transaction will be unspendable for at least 52596 blocks.
 // For details on the replay protection please see: https://github.com/bitcoin/bips/blob/master/bip-0115.mediawiki
 
@@ -209,8 +233,6 @@ var txobj = zencashjs.transaction.createRawTx(
   bip115BlockHeight,
   bip115BlockHash
 )
-
-
 
 // Prepare our signatures for mutli-sig
 var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys[0], redeemScript)
