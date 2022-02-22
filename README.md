@@ -126,7 +126,7 @@ zencashjs.transaction.serializeTx(txobj)
 
 ### New Transaction Types
 
-Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.0.pdf) for more details on these transaction types.
+Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.4.pdf) for more details on these transaction types.
 
 See also the updated [TX_OBJ](src/types.js) type declaration.
 
