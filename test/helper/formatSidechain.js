@@ -6,20 +6,21 @@ module.exports = function formatSidechain (txJson) {
   txObj.vsc_ccout = txJson.vsc_ccout.map(i => {
     delete i.scid; // RPC call would be needed for scid
     return { 
-      ...i, 
-      ftScFee: i.ftScFee * 1e8,
-      mbtrScFee: i.mbtrScFee * 1e8
+      ...i,
+      value: Math.trunc(i.value * 1e8),
+      ftScFee: Math.trunc(i.ftScFee * 1e8),
+      mbtrScFee: Math.trunc(i.mbtrScFee * 1e8)
     }
   })
 
   txObj.vft_ccout = txJson.vft_ccout.map(i => ({
     ...i,
-    value: i.value * 1e8
+    value: Math.trunc(i.value * 1e8)
   }))
 
   txObj.vcsw_ccin = txJson.vcsw_ccin.map(i => ({
     ...i,
-    value: i.value * 1e8,
+    value: Math.trunc(i.value * 1e8),
     scriptPubKey: {
       hex: i.scriptPubKey.hex
     },
@@ -30,7 +31,7 @@ module.exports = function formatSidechain (txJson) {
 
   txObj.vmbtr_out = txJson.vmbtr_out.map(i => ({
     ...i,
-    scFee: i.scFee * 1e8,
+    scFee: Math.trunc(i.scFee * 1e8),
     mcDestinationAddress: {
       pubkeyhash: i.mcDestinationAddress.pubkeyhash
     }
@@ -51,7 +52,7 @@ module.exports = function formatSidechain (txJson) {
   txJson.vout.forEach(output => {
       formattedOutput.push({
           script: output.scriptPubKey.hex,
-          satoshis: output.value * 1e8,
+          satoshis: Math.trunc(output.value * 1e8),
       })
   });
   txObj.outs = formattedOutput;
