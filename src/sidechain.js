@@ -100,7 +100,9 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
     offset += varuint.decode.bytes;
 
     for (let i = 0; i < numSco; i++) {
-        const withdrawalEpochLength = buf.readInt32LE(offset);
+
+        const version = buf.readInt8(offset + 3);
+        const withdrawalEpochLength = buf.readUIntLE(offset, 3);
         offset += 4;
 
         const value = readUInt64LE(buf, offset)
@@ -170,6 +172,7 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
 
         outputs.push({
             n: i,
+            version,
             withdrawalEpochLength,
             value,
             address,

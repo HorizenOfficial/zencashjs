@@ -12,6 +12,7 @@ export type TXOBJ = {
   }[],
   outs: { script: string, satoshis: number, backwardTransfer?: boolean }[],
   vsc_ccout?: {
+    version: number,
     withdrawalEpochLength: number,
     value: number,
     address: string,

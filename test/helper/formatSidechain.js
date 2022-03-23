@@ -7,7 +7,6 @@ module.exports = function formatSidechain (txJson) {
     delete i.scid; // RPC call would be needed for scid
     return { 
       ...i, 
-      value: i.value * 1e8, 
       ftScFee: i.ftScFee * 1e8,
       mbtrScFee: i.mbtrScFee * 1e8
     }
