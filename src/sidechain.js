@@ -95,6 +95,7 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
     const vBitVectorCertificateFieldConfig = [];
     let constant = '';
     let wCeasedVk = '';
+    const provingSystem = "CoboundaryMarlin";
 
     const numSco = varuint.decode(buf, offset)
     offset += varuint.decode.bytes;
@@ -170,14 +171,19 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
         const mbtrRequestDataLength = buf.readUInt8(offset);
         offset += 1;
 
+        const certProvingSystem = provingSystem;
+        const cswProvingSystem = provingSystem;
+
         outputs.push({
             n: i,
             version,
             withdrawalEpochLength,
             value,
             address,
+            certProvingSystem,
             customData,
             constant,
+            cswProvingSystem,
             wCertVk,
             wCeasedVk,
             vFieldElementCertificateFieldConfig,
