@@ -433,10 +433,13 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
 
       serializedTx += zbufferutils.getPushDataLength(sc_c.vBitVectorCertificateFieldConfig)
       if (sc_c.vBitVectorCertificateFieldConfig) {
+        const bitVectorIdx = 0;
+        const maxCompressedSizeIdx = 1;
         for (let i = 0; i < sc_c.vBitVectorCertificateFieldConfig.length; i++) {
-          let _b = Buffer.alloc(4);
-          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i], 0, 3);
-          serializedTx += _c.toString('hex');
+          let _b = Buffer.alloc(8);
+          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i][bitVectorIdx], 0, 4);
+          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i][maxCompressedSizeIdx], 4, 4);
+          serializedTx += _b.toString('hex');
         }
       }
 
