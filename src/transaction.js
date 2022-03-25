@@ -389,7 +389,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     serializedTx += o.script
   })
 
-  // Handles forward transfers and sidechain creation
+  // Handles sidechain creation and forward transfers
   if (txObj.version == -4) {
     serializedTx += zbufferutils.numToVarInt(0); // Write every csw
 
