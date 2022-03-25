@@ -392,8 +392,60 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
   // Only handles forward transfers at the moment
   if (txObj.version == -4) {
     serializedTx += zbufferutils.numToVarInt(0); // Write every csw
-    serializedTx += zbufferutils.numToVarInt(0); // Write every vsc
-    
+
+    serializedTx += zbufferutils.numToVarInt(txObj.vsc_ccout.length); // Write every vsc
+    for (var i = 0; i < txObj.vsc_ccout.length; i++) {
+
+      const sc_c = txObj.vsc_ccout[i];
+
+      let _b = Buffer.alloc(12);
+      _b.writeUIntLE(sc_c.withdrawalEpochLength, 0, 3);
+      _b.writeIntBE(sc_c.version, 3, 1);
+      zbufferutils.writeUInt64LE(_b, sc_c.value, 4)
+      serializedTx += _b.toString('hex');
+
+      serializedTx += Buffer.from(sc_c.address, 'hex').reverse().toString('hex');
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.customData)
+      serializedTx += sc_c.customData;
+
+      serializedTx += '01';
+      serializedTx += zbufferutils.getPushDataLength(sc_c.constant)
+      if (sc_c.constant) {
+        serializedTx += sc_c.constant;
+      }
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.wCertVk)
+      serializedTx += sc_c.wCertVk;
+
+      serializedTx += '01';
+      serializedTx += zbufferutils.getPushDataLength(sc_c.wCeasedVk)
+      if (sc_c.wCeasedVk) {
+        serializedTx += sc_c.wCeasedVk;
+      }
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.vFieldElementCertificateFieldConfig)
+      if (sc_c.vFieldElementCertificateFieldConfig) {
+        for (let i = 0; i < sc_c.vFieldElementCertificateFieldConfig.length; i++) {
+          serializedTx += sc_c.vFieldElementCertificateFieldConfig[i].toString(16);
+        }
+      }
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.vBitVectorCertificateFieldConfig)
+      if (sc_c.vBitVectorCertificateFieldConfig) {
+        for (let i = 0; i < sc_c.vBitVectorCertificateFieldConfig.length; i++) {
+          let _b = Buffer.alloc(8);
+          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i], 0, 4);
+          _b.writeUIntLE(0, 3, 4);
+          serializedTx += _b.toString('hex');
+        }
+      }
+
+      serializedTx += zbufferutils.writeUInt64LE(Buffer.alloc(8), sc_c.ftScFee, 0).toString('hex');
+      serializedTx += zbufferutils.writeUInt64LE(Buffer.alloc(8), sc_c.mbtrScFee, 0).toString('hex');
+      serializedTx += zbufferutils.numToVarInt(sc_c.mbtrRequestDataLength).toString('hex');
+    }
+
     serializedTx += zbufferutils.numToVarInt(txObj.vft_ccout.length); // Write every vft
     for (var i = 0; i < txObj.vft_ccout.length; i++) {
       var _buf32 = Buffer.alloc(8); // Satoshis
