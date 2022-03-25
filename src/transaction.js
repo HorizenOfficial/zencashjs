@@ -434,10 +434,9 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       serializedTx += zbufferutils.getPushDataLength(sc_c.vBitVectorCertificateFieldConfig)
       if (sc_c.vBitVectorCertificateFieldConfig) {
         for (let i = 0; i < sc_c.vBitVectorCertificateFieldConfig.length; i++) {
-          let _b = Buffer.alloc(8);
-          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i], 0, 4);
-          _b.writeUIntLE(0, 3, 4);
-          serializedTx += _b.toString('hex');
+          let _b = Buffer.alloc(4);
+          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i], 0, 3);
+          serializedTx += _c.toString('hex');
         }
       }
 
