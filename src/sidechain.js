@@ -102,9 +102,10 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
 
     for (let i = 0; i < numSco; i++) {
 
-        const version = buf.readInt8(offset + 3);
         const withdrawalEpochLength = buf.readUIntLE(offset, 3);
-        offset += 4;
+        offset += 3;
+        const version = buf.readInt8(offset);
+        offset += 1;
 
         const value = readUInt64LE(buf, offset)
         offset += 8;

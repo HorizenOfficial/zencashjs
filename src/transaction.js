@@ -338,6 +338,7 @@ function deserializeTx (
  * return {String} hex string of txObj
  */
 function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): string {
+  const hexRadix = 16;
   var serializedTx = ''
   var _buf16 = Buffer.alloc(4)
 
@@ -400,7 +401,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
 
       let _b = Buffer.alloc(12);
       _b.writeUIntLE(sc_c.withdrawalEpochLength, 0, 3);
-      _b.writeIntBE(sc_c.version, 3, 1);
+      _b.writeInt8(sc_c.version, 3);
       zbufferutils.writeUInt64LE(_b, sc_c.value, 4)
       serializedTx += _b.toString('hex');
 
@@ -427,7 +428,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       serializedTx += zbufferutils.getPushDataLength(sc_c.vFieldElementCertificateFieldConfig)
       if (sc_c.vFieldElementCertificateFieldConfig) {
         for (let i = 0; i < sc_c.vFieldElementCertificateFieldConfig.length; i++) {
-          serializedTx += sc_c.vFieldElementCertificateFieldConfig[i].toString(16);
+          serializedTx += sc_c.vFieldElementCertificateFieldConfig[i].toString(hexRadix);
         }
       }
 
@@ -437,8 +438,8 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
         const maxCompressedSizeIdx = 1;
         for (let i = 0; i < sc_c.vBitVectorCertificateFieldConfig.length; i++) {
           let _b = Buffer.alloc(8);
-          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i][bitVectorIdx], 0, 4);
-          _b.writeUIntLE(sc_c.vBitVectorCertificateFieldConfig[i][maxCompressedSizeIdx], 4, 4);
+          _b.writeUInt32LE(sc_c.vBitVectorCertificateFieldConfig[i][bitVectorIdx], 0);
+          _b.writeUInt32LE(sc_c.vBitVectorCertificateFieldConfig[i][maxCompressedSizeIdx], 4);
           serializedTx += _b.toString('hex');
         }
       }
