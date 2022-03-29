@@ -95,7 +95,12 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
     const vBitVectorCertificateFieldConfig = [];
     let constant = '';
     let wCeasedVk = '';
-    const provingSystem = "CoboundaryMarlin";
+
+    let provingSystem = new Map([
+        [0, 'Undefined'],
+        [1, 'Darlin'],
+        [2, 'CoboundaryMarlin']
+    ]);
 
     const numSco = varuint.decode(buf, offset)
     offset += varuint.decode.bytes;
@@ -136,6 +141,8 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
         const wCertVk = buf.slice(offset, offset + certVkLength).toString('hex');
         offset += certVkLength;
 
+        const certProvingSystem = provingSystem.get(parseInt(wCertVk.substring(0, 2)));
+
         const wCeasedVkOption = varuint.decode(buf, offset)
         offset += varuint.decode.bytes;
 
@@ -172,7 +179,6 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
         const mbtrRequestDataLength = buf.readUInt8(offset);
         offset += 1;
 
-        const certProvingSystem = provingSystem;
 
         const item = {
             n: i,
@@ -193,7 +199,7 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
 
         if (wCeasedVk) {
             item.wCeasedVk = wCeasedVk;
-            item.cswProvingSystem = provingSystem;
+            item.cswProvingSystem = provingSystem.get(parseInt(wCeasedVk.substring(0, 2)));
         }
 
         outputs.push(item);
