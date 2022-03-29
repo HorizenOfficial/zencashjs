@@ -173,9 +173,8 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
         offset += 1;
 
         const certProvingSystem = provingSystem;
-        const cswProvingSystem = provingSystem;
 
-        outputs.push({
+        const item = {
             n: i,
             version,
             withdrawalEpochLength,
@@ -184,15 +183,20 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
             certProvingSystem,
             customData,
             constant,
-            cswProvingSystem,
             wCertVk,
-            wCeasedVk,
             vFieldElementCertificateFieldConfig,
             vBitVectorCertificateFieldConfig,
             ftScFee,
             mbtrScFee,
             mbtrRequestDataLength
-        });
+        }
+
+        if (wCeasedVk) {
+            item.wCeasedVk = wCeasedVk;
+            item.cswProvingSystem = provingSystem;
+        }
+
+        outputs.push(item);
     }
 
     return [outputs, offset];

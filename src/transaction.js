@@ -419,10 +419,12 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       serializedTx += zbufferutils.getPushDataLength(sc_c.wCertVk)
       serializedTx += sc_c.wCertVk;
 
-      serializedTx += '01';
-      serializedTx += zbufferutils.getPushDataLength(sc_c.wCeasedVk)
       if (sc_c.wCeasedVk) {
+        serializedTx += '01';
+        serializedTx += zbufferutils.getPushDataLength(sc_c.wCeasedVk)
         serializedTx += sc_c.wCeasedVk;
+      } else {
+        serializedTx += '00';
       }
 
       serializedTx += zbufferutils.getPushDataLength(sc_c.vFieldElementCertificateFieldConfig)
