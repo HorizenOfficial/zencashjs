@@ -304,3 +304,25 @@ it("serializeTx() should properly serialize forward transfer transactions", func
 
   expect(txobj_serialized).to.deep.equal(expected_tx_hex);
 });
+
+it("serializeTx() should properly serialize Marlin sidechain creation transactions with CSW", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(x => x.description === 'SC Create with CSW')
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+      formatSidechain(json),
+      false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
+
+it("serializeTx() should properly serialize Marlin sidechain creation transactions without CSW", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(x => x.description === 'SC Create without CSW')
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+      formatSidechain(json),
+      false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});

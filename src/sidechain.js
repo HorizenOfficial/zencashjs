@@ -96,12 +96,21 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
     let constant = '';
     let wCeasedVk = '';
 
+    let provingSystem = new Map([
+        [0, 'Undefined'],
+        [1, 'Darlin'],
+        [2, 'CoboundaryMarlin']
+    ]);
+
     const numSco = varuint.decode(buf, offset)
     offset += varuint.decode.bytes;
 
     for (let i = 0; i < numSco; i++) {
-        const withdrawalEpochLength = buf.readInt32LE(offset);
-        offset += 4;
+
+        const withdrawalEpochLength = buf.readUIntLE(offset, 3);
+        offset += 3;
+        const version = buf.readInt8(offset);
+        offset += 1;
 
         const value = readUInt64LE(buf, offset)
         offset += 8;
@@ -131,6 +140,8 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
 
         const wCertVk = buf.slice(offset, offset + certVkLength).toString('hex');
         offset += certVkLength;
+
+        const certProvingSystem = provingSystem.get(parseInt(wCertVk.substring(0, 2)));
 
         const wCeasedVkOption = varuint.decode(buf, offset)
         offset += varuint.decode.bytes;
@@ -168,21 +179,30 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
         const mbtrRequestDataLength = buf.readUInt8(offset);
         offset += 1;
 
-        outputs.push({
+
+        const item = {
             n: i,
+            version,
             withdrawalEpochLength,
             value,
             address,
+            certProvingSystem,
             customData,
             constant,
             wCertVk,
-            wCeasedVk,
             vFieldElementCertificateFieldConfig,
             vBitVectorCertificateFieldConfig,
             ftScFee,
             mbtrScFee,
             mbtrRequestDataLength
-        });
+        }
+
+        if (wCeasedVk) {
+            item.wCeasedVk = wCeasedVk;
+            item.cswProvingSystem = provingSystem.get(parseInt(wCeasedVk.substring(0, 2)));
+        }
+
+        outputs.push(item);
     }
 
     return [outputs, offset];
