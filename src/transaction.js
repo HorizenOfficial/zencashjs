@@ -1,4 +1,5 @@
 // @flow
+import { addrToPubKeyHash } from './address'
 import type { TXOBJ, HISTORY, RECIPIENTS } from './types'
 
 var bs58check = require('bs58check')
@@ -337,22 +338,26 @@ function deserializeTx (
  * return {String} hex string of txObj
  */
 function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): string {
+  const hexRadix = 16;
   var serializedTx = ''
   var _buf16 = Buffer.alloc(4)
 
   // Version
-  _buf16.writeUInt16LE(txObj.version, 0)
+  _buf16.writeInt32LE(txObj.version, 0)
+
   serializedTx += _buf16.toString('hex')
 
   // History
   serializedTx += zbufferutils.numToVarInt(txObj.ins.length)
   txObj.ins.map((i) => {
     // Txids and vouts
-    _buf16.writeUInt16LE(i.output.vout, 0)
+    _buf16.writeUInt32LE(i.output.vout, 0);
+
     serializedTx += Buffer.from(i.output.hash, 'hex').reverse().toString('hex')
+
     serializedTx += _buf16.toString('hex')
 
-    if(withPrevScriptPubKey) {
+    if (withPrevScriptPubKey) {
       // Doesn't work for length > 253 ....
       serializedTx += zbufferutils.getPushDataLength(i.prevScriptPubKey)
       serializedTx += i.prevScriptPubKey
@@ -369,6 +374,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
 
   // Outputs
   serializedTx += zbufferutils.numToVarInt(txObj.outs.length)
+
   txObj.outs.map((o) => {
     // Write 64bit buffers
     // JS only supports 56 bit
@@ -376,8 +382,7 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     var _buf32 = Buffer.alloc(8)
 
     // Satoshis
-    _buf32.writeInt32LE(o.satoshis & -1, 0)
-    _buf32.writeUInt32LE(Math.floor(o.satoshis / 0x100000000), 4)
+    _buf32 = zbufferutils.writeUInt64LE(_buf32, o.satoshis, 0)
 
     // ScriptPubKey
     serializedTx += _buf32.toString('hex')
@@ -385,11 +390,89 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
     serializedTx += o.script
   })
 
-  // Locktime
-  _buf16.writeUInt16LE(txObj.locktime, 0)
-  serializedTx += _buf16.toString('hex')
+  // Handles sidechain creation and forward transfers
+  if (txObj.version == -4) {
+    serializedTx += zbufferutils.numToVarInt(0); // Write every csw
 
-  return serializedTx
+    serializedTx += zbufferutils.numToVarInt(txObj.vsc_ccout.length); // Write every vsc
+    for (var i = 0; i < txObj.vsc_ccout.length; i++) {
+
+      const sc_c = txObj.vsc_ccout[i];
+
+      let _b = Buffer.alloc(12);
+      _b.writeUIntLE(sc_c.withdrawalEpochLength, 0, 3);
+      _b.writeInt8(sc_c.version, 3);
+      zbufferutils.writeUInt64LE(_b, sc_c.value, 4)
+      serializedTx += _b.toString('hex');
+
+      serializedTx += Buffer.from(sc_c.address, 'hex').reverse().toString('hex');
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.customData)
+      serializedTx += sc_c.customData;
+
+      serializedTx += '01';
+      serializedTx += zbufferutils.getPushDataLength(sc_c.constant)
+      if (sc_c.constant) {
+        serializedTx += sc_c.constant;
+      }
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.wCertVk)
+      serializedTx += sc_c.wCertVk;
+
+      if (sc_c.wCeasedVk) {
+        serializedTx += '01';
+        serializedTx += zbufferutils.getPushDataLength(sc_c.wCeasedVk)
+        serializedTx += sc_c.wCeasedVk;
+      } else {
+        serializedTx += '00';
+      }
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.vFieldElementCertificateFieldConfig)
+      if (sc_c.vFieldElementCertificateFieldConfig) {
+        for (let i = 0; i < sc_c.vFieldElementCertificateFieldConfig.length; i++) {
+          serializedTx += sc_c.vFieldElementCertificateFieldConfig[i].toString(hexRadix);
+        }
+      }
+
+      serializedTx += zbufferutils.getPushDataLength(sc_c.vBitVectorCertificateFieldConfig)
+      if (sc_c.vBitVectorCertificateFieldConfig) {
+        const bitVectorIdx = 0;
+        const maxCompressedSizeIdx = 1;
+        for (let i = 0; i < sc_c.vBitVectorCertificateFieldConfig.length; i++) {
+          let _b = Buffer.alloc(8);
+          _b.writeUInt32LE(sc_c.vBitVectorCertificateFieldConfig[i][bitVectorIdx], 0);
+          _b.writeUInt32LE(sc_c.vBitVectorCertificateFieldConfig[i][maxCompressedSizeIdx], 4);
+          serializedTx += _b.toString('hex');
+        }
+      }
+
+      serializedTx += zbufferutils.writeUInt64LE(Buffer.alloc(8), sc_c.ftScFee, 0).toString('hex');
+      serializedTx += zbufferutils.writeUInt64LE(Buffer.alloc(8), sc_c.mbtrScFee, 0).toString('hex');
+      serializedTx += zbufferutils.numToVarInt(sc_c.mbtrRequestDataLength).toString('hex');
+    }
+
+    serializedTx += zbufferutils.numToVarInt(txObj.vft_ccout.length); // Write every vft
+    for (var i = 0; i < txObj.vft_ccout.length; i++) {
+      var _buf32 = Buffer.alloc(8); // Satoshis
+
+      _buf32 = zbufferutils.writeUInt64LE(_buf32, txObj.vft_ccout[i].value, 0)
+      serializedTx += _buf32.toString('hex');
+
+      var pubKeyHash = addrToPubKeyHash(txObj.vft_ccout[i].mcReturnAddress);
+
+      serializedTx += Buffer.from(txObj.vft_ccout[i].address, 'hex').reverse().toString('hex');
+      serializedTx += Buffer.from(txObj.vft_ccout[i].scid, 'hex').reverse().toString('hex');
+      serializedTx += Buffer.from(pubKeyHash, 'hex').toString('hex');
+    }
+
+    serializedTx += zbufferutils.numToVarInt(0); // Write every mbtr
+  }
+  
+  // Locktime
+  _buf16.writeInt32LE(txObj.locktime, 0);
+  serializedTx += _buf16.toString('hex');
+
+  return serializedTx;
 }
 
 /*
@@ -404,7 +487,8 @@ function createRawTx (
   history: HISTORY[],
   recipients: RECIPIENTS[],
   blockHeight: number,
-  blockHash: string
+  blockHash: string,
+  vft: TXOBJ.vft_ccout
 ): TXOBJ {
   var txObj = { locktime: 0, version: 1, ins: [], outs: [] }
 
@@ -422,6 +506,14 @@ function createRawTx (
       satoshis: o.satoshis
     }
   })
+
+  if (vft) {
+    txObj.version = -4;
+    txObj.vft_ccout = vft;
+    txObj.vsc_ccout = [];
+    txObj.vcsw_ccin = [];
+    txObj.vmbtr_out = [];
+  }
 
   return txObj
 }

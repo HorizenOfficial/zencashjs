@@ -1,10 +1,35 @@
 # zencashjs ![build status](https://api.travis-ci.org/HorizenOfficial/zencashjs.svg?branch=master)
-Dead simple and easy to use JavaScript based library for zencash. Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
+A javascript library for Node.js. Used in the development of Sphere and other wallets. Implements all non-computationally intensive operations.
+
+#### address.js
+- Create private keys, public keys, and addresses
+- Transform addresses / keys into different formats (WIF)
+
+#### transaction.js
+- Create and sign (non-shielded) transactions (1 input & multiple inputs)
+- Transaction serialization / deserialization
+
+#### message.js
+- Sign and verify messages
+
+#### address.js
+- Create secret key and transform to a spending key, paying key, or transmission key
+- Viewing key is not yet supported
+
+Address / keys prefixes for both mainnet and testnet in config.js.
+
+Inspired by [pybitcointools](https://github.com/vbuterin/pybitcointools)
+
+### Installation
+`npm install zencashjs`
+
+### Usage
+See examples below
 
 ## Migrating from 1.x to 2.x
 Version 2 brings sidechain support and compatibility with Zendoo.  Most functionality and example usage remains identical to Version 1, with the exception of the changes listed below:
 
-### `zencashjs.transaction.deserializeTx` 
+### `zencashjs.transaction.deserializeTx`
 This function now takes a third parameter `envPubKeyHash: string`
 ```javascript
 function deserializeTx (
@@ -21,8 +46,8 @@ function deserializeTx (
 const testnetTxHex = 'fcff...';
 
 zencashjs.transaction.deserializeTx(
-   testnetTxHex, 
-   false, 
+   testnetTxHex,
+   false,
    zencashjs.config.testnet.pubKeyHash
 );
 
@@ -31,20 +56,81 @@ zencashjs.transaction.deserializeTx(
 const mainnetTxHex = 'fcff...';
 
 zencashjs.transaction.deserializeTx(
-   mainnetTxHex, 
-   false, 
+   mainnetTxHex,
+   false,
    zencashjs.config.mainnet.pubKeyHash // Could be omitted, as it defaults to mainnet
 );
  ```
 
- ### New Transaction Types
+### `zencashjs.transaction.createRawTx`
+This function now takes a fifth optional parameter `vft` to be used for a forward transfer transaction
+```javascript
+function createRawTx (
+   history: HISTORY[],
+   recipients: RECIPIENTS[],
+   blockHeight: number,
+   blockHash: string,
+   vft: TXOBJ.vft_ccout
+): TXOBJ {}
+```
 
-Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.0.pdf) for more details on these transaction types.
+### Example forward transfer transaction
+```javascript
 
-See also the updated [TX_OBJ](src/types.js) type delcaration.
+// Sending 10 ZEN from address 'ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL' to address '8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8' on sidechain with sidechain id '1a4d5813b260d0cb456c649b005840e1a1eb6eb2e0f98f3af7d201ea1e95d0b8'
+var blockHeight = 937649
+var blockHash = '0002d980065e2bb502a302905ed81229aa467a9502b527a491d7978b970b1ae5'
 
-> Note: `serializeTx` and `createRawTx` do not yet support the new types, but will in future releases.
+var txobj = zencashjs.transaction.createRawTx(
+  [{
+      txid: '087faec93611add81dcf0ec31df934248e63c4abde21ee81d65584c7396feb2b', vout: 0,
+      scriptPubKey: ''
+  }],
+  [{address: 'ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL', satoshis: 297799952794}],
+  blockHeight,
+  blockHash,
+  [{
+    scid: "1a4d5813b260d0cb456c649b005840e1a1eb6eb2e0f98f3af7d201ea1e95d0b8",
+    n: 0,
+    value: 1000000000,
+    address: "8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8",
+    mcReturnAddress: "ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL"
+  }]
+)
+// { locktime: 0,
+//   version: -4,
+//   ins:
+//    [ { output: { hash: '087faec93611add81dcf0ec31df934248e63c4abde21ee81d65584c7396feb2b', vout: 0 },
+//        script: '',
+//        prevScriptPubKey: '',
+//        sequence: 'ffffffff' } ],
+//   outs:
+//    [ { script:
+//         '76a914ec6039c0505e74b8f74fb1e22b77da64d30ce6b388ac20e51a0b978b97d791a427b502957a46aa2912d85e9002a302b52b5e0680d9020003b14e0eb4',
+//        satoshis: 297799952794 } ],
+//   vft_ccout:
+//    [ { scid:
+//         '1a4d5813b260d0cb456c649b005840e1a1eb6eb2e0f98f3af7d201ea1e95d0b8',
+//        n: 0,
+//        value: 1000000000,
+//        address:
+//         '8d8137d57eee250bdd0302fcad05243276ba059556165517c3d919331cd5bdc8',
+//        mcReturnAddress: 'ztphoWCQmyJVuNq2L3SLnRgy2Lw5i5a7hxL' } ],
+//   vsc_ccout: [],
+//   vcsw_ccin: [],
+//   vmbtr_out: [] }
 
+zencashjs.transaction.serializeTx(txobj)
+// fcffffff012beb6f39c78455d681ee21deabc4638e2434f91dc30ecf1dd8ad1136c9ae7f080000000000ffffffff019aa94256450000003f76a914ec6039c0505e74b8f74fb1e22b77da64d30ce6b388ac20e51a0b978b97d791a427b502957a46aa2912d85e9002a302b52b5e0680d9020003b14e0eb400000100ca9a3b00000000c8bdd51c3319d9c3175516569505ba76322405adfc0203dd0b25ee7ed537818db8d0951eea01d2f73a8ff9e0b26eeba1e14058009b646c45cbd060b213584d1aec6039c0505e74b8f74fb1e22b77da64d30ce6b30000000000
+```
+
+### New Transaction Types
+
+Zendoo introduces new transaction types related to sidechains.  Therefore, `deserializeTx` will return extra fields if applicable. See the [Zendoo Upgrade Guide](https://downloads.horizen.io/file/web-assets/Zend_to_Zend_oo_Exchanges_v1.4.pdf) for more details on these transaction types.
+
+See also the updated [TX_OBJ](src/types.js) type declaration.
+
+> Note: `serializeTx` and `createRawTx` do not yet support all the new types (only forward transfers are supported), but will in future releases.
 
 ## Version 1
 ### Example usage (Transparent address)
@@ -64,7 +150,7 @@ var zAddr = zencashjs.address.pubKeyToAddr(pubKey)
 // znnjppzJG7ajT7f6Vp1AD6SjgcXBVPA2E6c
 
 // It is imperative that the block used for bip115BlockHeight and bip115BlockHash has a sufficient number of
-// confirmations (recommded values: 150 to 600 blocks older than current BLOCKHEIGHT). If the block used for 
+// confirmations (recommded values: 150 to 600 blocks older than current BLOCKHEIGHT). If the block used for
 // the replay protection should get orphaned the transaction will be unspendable for at least 52596 blocks.
 // For details on the replay protection please see: https://github.com/bitcoin/bips/blob/master/bip-0115.mediawiki
 
@@ -209,8 +295,6 @@ var txobj = zencashjs.transaction.createRawTx(
   bip115BlockHeight,
   bip115BlockHash
 )
-
-
 
 // Prepare our signatures for mutli-sig
 var sig1 = zencashjs.transaction.multiSign(txobj, 0, privKeys[0], redeemScript)

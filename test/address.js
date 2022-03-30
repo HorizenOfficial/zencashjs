@@ -39,6 +39,14 @@ it('PublicKeyToPublicAddress() should be deterministic', function () {
   expect(addrComp).to.equal('znnjppzJG7ajT7f6Vp1AD6SjgcXBVPA2E6c')
 })
 
+it('addrToPubKeyHash() should be deterministic', function () {
+  var addr = 'znkz4JE6Y4m8xWoo4ryTnpxwBT5F7vFDgNf';
+  var pubKeyHash = 'da46f44467949ac9321b16402c32bbeede5e3e5f';
+
+  expect(zencashjs.address.addrToPubKeyHash(addr)).to.equal(pubKeyHash);
+  expect(zencashjs.address.pubKeyHashToAddr(pubKeyHash)).to.equal(addr);
+});
+
 it('mkMultiSigRedeemScript() should be deterministic', function () {
   var redeemScript = zencashjs.address.mkMultiSigRedeemScript(
     ['03519842d08ea56a635bfa8dd617b8e33f0426530d8e201107dd9a6af9493bd487', '02d3ac8c0cb7b99a26cd66269a312afe4e0a621579dfe8b33e29c597a32a616544', '02696187262f522cf1fa2c30c5cd6853c4a6c51ad5ba418abb4e3898dbc5a93d2e'],

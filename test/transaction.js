@@ -289,7 +289,40 @@ it('deserializeTx() should properly deserialize sidechain (transactions with ver
   sidechainTestData.forEach(sidechain => {
     const expected_txobj = formatSidechain(sidechain.json);
     const txobj_deserialized = zencashjs.transaction.deserializeTx(sidechain.hex, false, pubKeyHash);
-  
+
     expect(txobj_deserialized).to.deep.equal(expected_txobj);
   })
 })
+
+it("serializeTx() should properly serialize forward transfer transactions", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(x => x.description === 'MC -> SC Forward Transfer TX')
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+    formatSidechain(json),
+    false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
+
+it("serializeTx() should properly serialize Marlin sidechain creation transactions with CSW", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(x => x.description === 'SC Create with CSW')
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+      formatSidechain(json),
+      false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
+
+it("serializeTx() should properly serialize Marlin sidechain creation transactions without CSW", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(x => x.description === 'SC Create without CSW')
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+      formatSidechain(json),
+      false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
