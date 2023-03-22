@@ -410,10 +410,12 @@ function serializeTx (txObj: TXOBJ, withPrevScriptPubKey: boolean = false): stri
       serializedTx += zbufferutils.getPushDataLength(sc_c.customData)
       serializedTx += sc_c.customData;
 
-      serializedTx += '01';
-      serializedTx += zbufferutils.getPushDataLength(sc_c.constant)
       if (sc_c.constant) {
+        serializedTx += "01";
+        serializedTx += zbufferutils.getPushDataLength(sc_c.constant);
         serializedTx += sc_c.constant;
+      } else {
+        serializedTx += "00";
       }
 
       serializedTx += zbufferutils.getPushDataLength(sc_c.wCertVk)

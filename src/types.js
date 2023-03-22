@@ -19,7 +19,7 @@ export type TXOBJ = {
     certProvingSystem: string,
     customData: string,
     wCertVk: string,
-    constant: string,
+    constant?: string,
     cswProvingSystem: string,
     wCeasedVk: string,
     vFieldElementCertificateFieldConfig: number[],
