@@ -340,9 +340,9 @@ it("serializeTx() should properly serialize v2 sidechain registration transactio
   expect(txobj_serialized).to.deep.equal(expected_tx_hex);
 });
 
-it("serializeTx() should properly serialize v2 ceasable sidechain creation transactions", function () {
+it("serializeTx() should properly serialize v1 ceasable sidechain creation transactions", function () {
   const { hex: expected_tx_hex, json } = sidechainTestData.find(
-    (x) => x.description === "SC Create v2 ceasable sidechain"
+    (x) => x.description === "SC Create v1 ceasable sidechain"
   );
 
   const txobj_serialized = zencashjs.transaction.serializeTx(
