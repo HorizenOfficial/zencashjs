@@ -188,7 +188,7 @@ function deserializeScOutputs(buf: Buffer, offset: number) {
             address,
             certProvingSystem,
             customData,
-            constant,
+            ...(constant !== undefined && constant !== '' && { constant }),
             wCertVk,
             vFieldElementCertificateFieldConfig,
             vBitVectorCertificateFieldConfig,
