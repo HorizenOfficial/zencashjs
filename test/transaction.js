@@ -326,3 +326,42 @@ it("serializeTx() should properly serialize Marlin sidechain creation transactio
 
   expect(txobj_serialized).to.deep.equal(expected_tx_hex);
 });
+
+it("serializeTx() should properly serialize v2 sidechain registration transactions", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(
+    (x) => x.description === "SC Register v2 sidechain"
+  );
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+    formatSidechain(json),
+    false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
+
+it("serializeTx() should properly serialize v2 ceasable sidechain creation transactions", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(
+    (x) => x.description === "SC Create v2 ceasable sidechain"
+  );
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+    formatSidechain(json),
+    false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
+
+it("serializeTx() should properly serialize v2 non-ceasable sidechain creation transactions", function () {
+  const { hex: expected_tx_hex, json } = sidechainTestData.find(
+    (x) => x.description === "SC Create v2 non-ceasable sidechain"
+  );
+
+  const txobj_serialized = zencashjs.transaction.serializeTx(
+    formatSidechain(json),
+    false
+  );
+
+  expect(txobj_serialized).to.deep.equal(expected_tx_hex);
+});
