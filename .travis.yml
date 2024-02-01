@@ -7,11 +7,10 @@ dist: focal
 
 language: node_js
 node_js:
-  - 10
-  - 12
-  - 14
   - 16
-  - 17
+  - 18
+  - 20
+  - 21
 
 cache:
   npm: false
