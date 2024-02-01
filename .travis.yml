@@ -3,7 +3,8 @@ os:
 - osx
 - windows
 
-dist: focal
+dist: jammy
+osx_image: xcode14.2
 
 language: node_js
 node_js:
