@@ -6,7 +6,11 @@
 var createHash = require('create-hash')
 
 function ripemd160 (buffer: Buffer): string {
-  return createHash('rmd160').update(buffer).digest('hex')
+  try {
+    return createHash('rmd160').update(buffer).digest('hex');
+  } catch(e) {
+    return createHash('ripemd160').update(buffer).digest('hex');
+  }
 }
 
 function sha1 (buffer: Buffer): string {
