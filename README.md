@@ -1,3 +1,19 @@
+> ⚠️ **Repository Archived**
+
+---
+
+### 🚫 Deprecated — No Longer Maintained
+
+This repository has been **archived** and is **no longer actively maintained**.
+
+- ❌ No further updates, issues, or pull requests will be accepted.  
+- 📦 The code remains available for **reference purposes only**.  
+- ⚠️ **Use at your own discretion.**
+
+---
+
+**Archived on:** _2025-10-15_
+
 # zencashjs ![build status](https://api.travis-ci.org/HorizenOfficial/zencashjs.svg?branch=master)
 A javascript library for Node.js. Used in the development of Sphere and other wallets. Implements all non-computationally intensive operations.
 
